@@ -33,7 +33,11 @@ const uiToApiActivity = (data) => ({
   activity_type: TYPE_UI_TO_API[data.type] || data.type,
   course: data.course,
   deadline: data.eventDate || data.deadline,
-  ...(data.startTime && { event_date: data.startTime }),
+  ...(data.startTime && {
+    event_date: /^\d{2}:\d{2}$/.test(data.startTime)
+      ? `${data.eventDate || data.deadline}T${data.startTime}:00`
+      : data.startTime,
+  }),
 });
 
 export const useActivities = () => {
