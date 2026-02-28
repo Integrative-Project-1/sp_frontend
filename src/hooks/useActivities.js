@@ -1,91 +1,90 @@
 import { useState, useEffect, useCallback } from 'react';
-import { initialActivities } from '../mock/activitiesMock';
+import * as svc from '../services/activitiesService';
+
+const TYPE_UI_TO_API = {
+  examen: 'exam',
+  quiz: 'quiz',
+  taller: 'workshop',
+  proyecto: 'project',
+  otro: 'other',
+};
+
+const TYPE_API_TO_UI = Object.fromEntries(
+  Object.entries(TYPE_UI_TO_API).map(([k, v]) => [v, k])
+);
+
+const apiToUI = (activity) => ({
+  id: String(activity.id),
+  title: activity.title,
+  type: TYPE_API_TO_UI[activity.activity_type] || activity.activity_type,
+  course: activity.course,
+  eventDate: activity.deadline,
+  startTime: activity.event_date || '',
+  milestones: (activity.subtasks || []).map((s) => ({
+    text: s.name,
+    completed: s.status === 'done',
+    targetDate: s.target_date,
+    estimatedEffort: Number(s.estimated_hours),
+  })),
+});
+
+const uiToApiActivity = (data) => ({
+  title: data.title,
+  activity_type: TYPE_UI_TO_API[data.type] || data.type,
+  course: data.course,
+  deadline: data.eventDate || data.deadline,
+  ...(data.startTime && { event_date: data.startTime }),
+});
 
 export const useActivities = () => {
+  const [activities, setActivities] = useState([]);
   const [error, setError] = useState(null);
 
-  const [activities, setActivities] = useState(() => {
-    // Criterio C1: Persistencia verificable en localStorage
-    const saved = localStorage.getItem('activities');
-    if (!saved) return initialActivities;
+  const fetchActivities = useCallback(async () => {
     try {
-      const parsed = JSON.parse(saved);
-      // Si no hay actividades guardadas, mostrar los mocks iniciales
-      if (!Array.isArray(parsed) || parsed.length === 0) return initialActivities;
-      // Migración suave: si venías de una versión sin subtareas, completa desde el mock por id
-      const mockById = new Map(initialActivities.map((a) => [a.id, a]));
-      return parsed.map((a) => {
-        const mock = mockById.get(a?.id);
-        const next = { ...a };
-        if (next.milestones === undefined && mock?.milestones) next.milestones = mock.milestones;
-        if (!Array.isArray(next.milestones)) next.milestones = [];
-        next.milestones = next.milestones
-          .filter(Boolean)
-          .map((m) => (typeof m === 'string' ? { text: m, completed: false } : m))
-          .map((m) => ({
-            text: (m?.text ?? '').toString(),
-            completed: Boolean(m?.completed),
-            targetDate: m?.targetDate || next.eventDate,
-            estimatedEffort: Number(m?.estimatedEffort) || 3,
-          }));
-        return next;
-      });
+      const data = await svc.getActivities();
+      const list = Array.isArray(data) ? data : data.results || [];
+      setActivities(list.map(apiToUI));
+      setError(null);
     } catch (e) {
-      setError(e?.message || 'Error al cargar actividades');
-      return initialActivities;
-    }
-  });
-
-  const retry = useCallback(() => {
-    setError(null);
-    try {
-      const saved = localStorage.getItem('activities');
-      if (!saved) {
-        setActivities(initialActivities);
-        return;
-      }
-      const parsed = JSON.parse(saved);
-      if (!Array.isArray(parsed) || parsed.length === 0) {
-        setActivities(initialActivities);
-        return;
-      }
-      const mockById = new Map(initialActivities.map((a) => [a.id, a]));
-      const migrated = parsed.map((a) => {
-        const mock = mockById.get(a?.id);
-        const next = { ...a };
-        if (next.milestones === undefined && mock?.milestones) next.milestones = mock.milestones;
-        if (!Array.isArray(next.milestones)) next.milestones = [];
-        next.milestones = next.milestones
-          .filter(Boolean)
-          .map((m) => (typeof m === 'string' ? { text: m, completed: false } : m))
-          .map((m) => ({
-            text: (m?.text ?? '').toString(),
-            completed: Boolean(m?.completed),
-            targetDate: m?.targetDate || next.eventDate,
-            estimatedEffort: Number(m?.estimatedEffort) || 3,
-          }));
-        return next;
-      });
-      setActivities(migrated);
-    } catch {
-      setActivities(initialActivities);
+      setError(e?.response?.data?.detail || e?.message || 'Error al cargar actividades');
     }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('activities', JSON.stringify(activities));
-  }, [activities]);
+    fetchActivities();
+  }, [fetchActivities]);
 
-  const addActivity = (activity) => {
-    setActivities((prev) => [...prev, { ...activity, id: Date.now().toString() }]);
+  const retry = fetchActivities;
+
+  const addActivity = async (formData) => {
+    const created = await svc.createActivity(uiToApiActivity(formData));
+    const milestones = (formData.milestones || []).filter((m) => m.text?.trim());
+    for (const m of milestones) {
+      await svc.createSubtask(created.id, {
+        name: m.text,
+        target_date: m.targetDate || created.deadline,
+        estimated_hours: Number(m.estimatedEffort) || 1,
+      });
+    }
+    await fetchActivities();
+    return created;
   };
 
-  const updateActivity = (activityId, updates) => {
-    setActivities((prev) => prev.map((a) => (a.id === activityId ? { ...a, ...updates } : a)));
+  const updateActivity = async (activityId, updates) => {
+    if (updates.title !== undefined) {
+      await svc.updateActivity(activityId, uiToApiActivity(updates));
+      await fetchActivities();
+    } else {
+      setActivities((prev) =>
+        prev.map((a) => (a.id === String(activityId) ? { ...a, ...updates } : a))
+      );
+    }
   };
 
-  const deleteActivity = (activityId) => {
-    setActivities((prev) => prev.filter((a) => a.id !== activityId));
+  const deleteActivity = async (activityId) => {
+    await svc.deleteActivity(activityId);
+    setActivities((prev) => prev.filter((a) => a.id !== String(activityId)));
   };
 
   return { activities, addActivity, updateActivity, deleteActivity, error, retry };

@@ -9,8 +9,8 @@ const CreateActivityPage = () => {
   const { showSuccess } = useToast();
   const { addActivity } = useActivities();
 
-  const handleCreateActivity = (data) => {
-    addActivity(data);
+  const handleCreateActivity = async (data) => {
+    await addActivity(data);
     showSuccess('Actividad creada correctamente');
     navigate('/hoy');
   };

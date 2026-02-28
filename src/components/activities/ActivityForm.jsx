@@ -76,7 +76,7 @@ const ActivityForm = ({ onSubmit, onCancel, initialData }) => {
     );
   };
 
-  const handleFormSubmit = (data) => {
+  const handleFormSubmit = async (data) => {
     const tasks = milestones
       .filter((m) => m.text.trim())
       .map(({ text, completed, targetDate, estimatedEffort }) => ({
@@ -85,7 +85,7 @@ const ActivityForm = ({ onSubmit, onCancel, initialData }) => {
         targetDate: targetDate || data.eventDate,
         estimatedEffort: Number(estimatedEffort) || 3,
       }));
-    onSubmit({ ...data, milestones: tasks, ...(isEdit && { id: initialData.id }) });
+    await onSubmit({ ...data, milestones: tasks, ...(isEdit && { id: initialData.id }) });
   };
 
   return (
