@@ -12,8 +12,8 @@ const EditActivityPage = () => {
 
   const activity = activities.find((a) => a.id === id);
 
-  const handleUpdateActivity = (data) => {
-    updateActivity(id, data);
+  const handleUpdateActivity = async (data) => {
+    await updateActivity(id, data);
     showSuccess('Actividad modificada correctamente');
     navigate('/');
   };
