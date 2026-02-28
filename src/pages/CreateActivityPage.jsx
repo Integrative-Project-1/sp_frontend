@@ -1,12 +1,25 @@
-import { Typography, Paper, Box } from '@mui/material';
+import React from 'react';
+import ActivityForm from '../components/activities/ActivityForm';
+import { useActivities } from '../hooks/useActivities';
+import { useToast } from '../context/ToastContext';
+import { useNavigate } from 'react-router-dom';
 
-export default function CreateActivityPage() {
+const CreateActivityPage = () => {
+  const navigate = useNavigate();
+  const { showSuccess } = useToast();
+  const { addActivity } = useActivities();
+
+  const handleCreateActivity = (data) => {
+    addActivity(data);
+    showSuccess('Actividad creada correctamente');
+    navigate('/hoy');
+  };
+
   return (
-    <Box>
-      <Typography variant="h1" gutterBottom>Crear Actividad</Typography>
-      <Paper sx={{ p: 3 }}>
-        <Typography>Formulario para crear actividades (Sprint 1).</Typography>
-      </Paper>
-    </Box>
+    <div className="min-h-screen w-full bg-[#0f172a] flex items-center justify-center p-6">
+      <ActivityForm onSubmit={handleCreateActivity} onCancel={() => navigate(-1)} />
+    </div>
   );
-}
+};
+
+export default CreateActivityPage;

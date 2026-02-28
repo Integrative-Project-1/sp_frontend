@@ -1,23 +1,22 @@
-import { Outlet } from 'react-router-dom';
-import { Box, Container, AppBar, Toolbar, Typography, Button } from '@mui/material';
-import { Link as RouterLink } from 'react-router-dom';
+import React from 'react';
+import { Outlet } from 'react-router-dom'; // Importante para rutas anidadas
+import Sidebar from './Sidebar';
 
-export default function Layout() {
+const Layout = () => {
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <AppBar position="static">
-        <Toolbar>
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            Planificador de Estudio
-          </Typography>
-          <Button color="inherit" component={RouterLink} to="/hoy">Hoy</Button>
-          <Button color="inherit" component={RouterLink} to="/crear">Crear</Button>
-          <Button color="inherit" component={RouterLink} to="/progreso">Progreso</Button>
-        </Toolbar>
-      </AppBar>
-      <Container component="main" sx={{ mt: 4, mb: 4, flex: 1 }}>
-        <Outlet />
-      </Container>
-    </Box>
+    <div className="flex min-h-screen bg-[#0b0f1a]">
+      {/* Sidebar fijo (Trazabilidad UX - Navegación coherente) */}
+      <Sidebar />
+
+      {/* Área de contenido principal */}
+      <main className="flex-1 overflow-y-auto">
+        <div className="max-w-[1200px] mx-auto p-8">
+          {/* Aquí se renderizarán HomePage, CreateActivityPage, etc. */}
+          <Outlet />
+        </div>
+      </main>
+    </div>
   );
-}
+};
+
+export default Layout;
