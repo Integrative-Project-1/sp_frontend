@@ -1,7 +1,37 @@
 import React, { useState } from 'react';
 import { AlertCircle, ChevronDown, ChevronUp, Check, Trash2, Pencil } from 'lucide-react';
+import { format, parseISO, differenceInCalendarDays } from 'date-fns';
+import { es } from 'date-fns/locale';
 import ConfirmModal from '../common/ConfirmModal';
 import { useToast } from '../../context/ToastContext';
+
+const formatDeadline = (dateStr) => {
+  if (!dateStr) return '';
+  try {
+    const date = parseISO(dateStr);
+    return format(date, "d 'de' MMMM", { locale: es });
+  } catch {
+    return dateStr;
+  }
+};
+
+const formatCountdown = (dateStr) => {
+  if (!dateStr) return null;
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const date = parseISO(dateStr);
+    date.setHours(0, 0, 0, 0);
+    const diff = differenceInCalendarDays(date, today);
+    if (diff === 0) return 'Hoy';
+    if (diff === 1) return 'Mañana';
+    if (diff > 1) return `En ${diff} días`;
+    if (diff === -1) return 'Ayer';
+    return `Hace ${Math.abs(diff)} días`;
+  } catch {
+    return null;
+  }
+};
 
 const BORDER_VARIANTS = {
   vencidas: 'border-red-500',
@@ -37,7 +67,7 @@ const UrgentTaskCard = ({
   const title = activity?.title || activity?.activityTitle;
   const course = activity?.course;
   const deadline = activity?.eventDate;
-  const timeRemaining = activity?.startTime || 'Pronto';
+  const countdown = formatCountdown(deadline);
   const milestones = activity?.milestones || [];
 
   const [editingIndex, setEditingIndex] = useState(null);
@@ -107,13 +137,13 @@ const UrgentTaskCard = ({
           <div>
             <h4 className="text-white font-semibold">{title}</h4>
             <p className="text-gray-400 text-xs">
-              {course} • Vence: {deadline}
+              {course} • Vence: {formatDeadline(deadline)}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <span className={`px-3 py-1 rounded-full text-xs font-bold border ${badgeClass}`}>
-            {variant === 'terminadas' ? `${progress}%` : `${timeRemaining} Left`}
+            {variant === 'terminadas' ? `${progress}%` : (countdown ?? 'Pronto')}
           </span>
           {isExpanded ? (
             <ChevronUp className="text-gray-400" size={20} />
