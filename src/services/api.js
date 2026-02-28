@@ -8,7 +8,6 @@ const api = axios.create({
   withCredentials: true,
 });
 
-// Interceptor para errores
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -16,8 +15,5 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-
-// Método de prueba
-export const healthCheck = () => api.get('/health/');
 
 export default api;

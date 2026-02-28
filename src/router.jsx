@@ -2,8 +2,8 @@ import { createBrowserRouter } from 'react-router-dom';
 import Layout from './components/common/Layout';
 import HomePage from './pages/HomePage';
 import CreateActivityPage from './pages/CreateActivityPage';
-import ActivityDetailPage from './pages/ActivityDetailPage';
-import ProgressPage from './pages/ProgressPage';
+import EditActivityPage from './pages/EditActivityPage';
+import ComingSoonPage from './pages/ComingSoonPage';
 
 export const router = createBrowserRouter([
   {
@@ -13,8 +13,11 @@ export const router = createBrowserRouter([
       { path: '/', element: <HomePage /> },
       { path: '/hoy', element: <HomePage /> },
       { path: '/crear', element: <CreateActivityPage /> },
-      { path: '/actividad/:id', element: <ActivityDetailPage /> },
-      { path: '/progreso', element: <ProgressPage /> },
+      { path: '/editar/:id', element: <EditActivityPage /> },
+      // Rutas con el mensaje de Próximamente
+      { path: '/calendario', element: <ComingSoonPage title="Calendario" /> },
+      { path: '/cursos', element: <ComingSoonPage title="Mis Cursos" /> },
+      { path: '/evaluaciones', element: <ComingSoonPage title="Evaluaciones" /> },
     ],
   },
 ]);
