@@ -42,9 +42,11 @@ const uiToApiActivity = (data) => ({
 
 export const useActivities = () => {
   const [activities, setActivities] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const fetchActivities = useCallback(async () => {
+    setLoading(true);
     try {
       const data = await svc.getActivities();
       const list = Array.isArray(data) ? data : data.results || [];
@@ -53,6 +55,8 @@ export const useActivities = () => {
       setError(null);
     } catch (e) {
       setError(e?.response?.data?.detail || e?.message || 'Error al cargar actividades');
+    } finally {
+      setLoading(false);
     }
   }, []);
 
@@ -92,5 +96,5 @@ export const useActivities = () => {
     setActivities((prev) => prev.filter((a) => a.id !== String(activityId)));
   };
 
-  return { activities, addActivity, updateActivity, deleteActivity, error, retry };
+  return { activities, loading, addActivity, updateActivity, deleteActivity, error, retry };
 };

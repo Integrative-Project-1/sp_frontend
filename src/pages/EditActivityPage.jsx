@@ -1,5 +1,6 @@
 import React from 'react';
 import ActivityForm from '../components/activities/ActivityForm';
+import LoadingSpinner from '../components/common/LoadingSpinner';
 import { useActivities } from '../hooks/useActivities';
 import { useToast } from '../context/ToastContext';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -8,7 +9,7 @@ const EditActivityPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { showSuccess } = useToast();
-  const { activities, updateActivity } = useActivities();
+  const { activities, loading, updateActivity } = useActivities();
 
   const activity = activities.find((a) => a.id === id);
 
@@ -17,6 +18,10 @@ const EditActivityPage = () => {
     showSuccess('Actividad modificada correctamente');
     navigate('/');
   };
+
+  if (loading) {
+    return <LoadingSpinner />;
+  }
 
   if (!activity) {
     return (

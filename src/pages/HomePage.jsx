@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import StatCard from '../components/dashboard/StatCard';
 import UrgentTaskCard from '../components/dashboard/UrgentTaskCard';
+import LoadingSpinner from '../components/common/LoadingSpinner';
 import { useActivities } from '../hooks/useActivities';
 import { useToast } from '../context/ToastContext';
 import { groupAndSortActivities, SORTING_RULE_TEXT } from '../utils/activityGrouping';
@@ -19,7 +20,7 @@ import { groupAndSortActivities, SORTING_RULE_TEXT } from '../utils/activityGrou
 const HomePage = () => {
   const navigate = useNavigate();
   const { showSuccess } = useToast();
-  const { activities, updateActivity, deleteActivity, error, retry } = useActivities();
+  const { activities, loading, updateActivity, deleteActivity, error, retry } = useActivities();
   const [showRule, setShowRule] = useState(false);
   const [expandedId, setExpandedId] = useState(null);
 
@@ -32,6 +33,10 @@ const HomePage = () => {
     setExpandedId((prev) => (prev === id ? null : prev));
     showSuccess('Actividad eliminada correctamente');
   };
+
+  if (loading) {
+    return <LoadingSpinner />;
+  }
 
   if (error) {
     return (
