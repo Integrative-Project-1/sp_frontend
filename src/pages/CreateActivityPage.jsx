@@ -1,12 +1,16 @@
-import { Typography, Paper, Box } from '@mui/material';
+import { Box, Typography } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import ActivityForm from '../components/activities/ActivityForm';
 
 export default function CreateActivityPage() {
+  const navigate = useNavigate();
   return (
     <Box>
       <Typography variant="h1" gutterBottom>Crear Actividad</Typography>
-      <Paper sx={{ p: 3 }}>
-        <Typography>Formulario para crear actividades (Sprint 1).</Typography>
-      </Paper>
+      <ActivityForm
+        onSave={(activity) => navigate(`/actividad/${activity.id}`)}
+        onCancel={() => navigate('/hoy')}
+      />
     </Box>
   );
 }
