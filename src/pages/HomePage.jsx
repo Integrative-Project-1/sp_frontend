@@ -41,9 +41,7 @@ const HomePage = () => {
         </header>
         <div className="p-8 bg-red-500/10 border border-red-500/30 rounded-2xl flex flex-col items-center gap-4">
           <AlertCircle className="text-red-400" size={48} />
-          <p className="text-red-200 text-center">
-            No se pudieron cargar las actividades. {error}
-          </p>
+          <p className="text-red-200 text-center">No se pudieron cargar las actividades. {error}</p>
           <button
             onClick={retry}
             className="flex items-center gap-2 px-6 py-3 bg-red-500/20 hover:bg-red-500/30 text-red-300 rounded-xl font-medium transition-colors"
@@ -61,9 +59,7 @@ const HomePage = () => {
       key={activity.id}
       activity={activity}
       isExpanded={expandedId === activity.id}
-      onToggleExpand={() =>
-        setExpandedId((prev) => (prev === activity.id ? null : activity.id))
-      }
+      onToggleExpand={() => setExpandedId((prev) => (prev === activity.id ? null : activity.id))}
       onUpdateActivity={updateActivity}
       onEditActivity={(a) => navigate(`/editar/${a.id}`)}
       onDeleteActivity={handleDeleteActivity}

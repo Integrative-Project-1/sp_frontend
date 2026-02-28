@@ -23,10 +23,7 @@ const EditActivityPage = () => {
       <div className="min-h-screen w-full bg-[#0f172a] flex items-center justify-center p-6">
         <div className="text-center text-gray-400">
           <p>Actividad no encontrada.</p>
-          <button
-            onClick={() => navigate('/')}
-            className="mt-4 text-blue-400 hover:text-blue-300"
-          >
+          <button onClick={() => navigate('/')} className="mt-4 text-blue-400 hover:text-blue-300">
             Volver al panel
           </button>
         </div>

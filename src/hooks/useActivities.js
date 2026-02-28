@@ -21,9 +21,7 @@ export const useActivities = () => {
         if (!Array.isArray(next.milestones)) next.milestones = [];
         next.milestones = next.milestones
           .filter(Boolean)
-          .map((m) =>
-            typeof m === 'string' ? { text: m, completed: false } : m
-          )
+          .map((m) => (typeof m === 'string' ? { text: m, completed: false } : m))
           .map((m) => ({
             text: (m?.text ?? '').toString(),
             completed: Boolean(m?.completed),
@@ -83,9 +81,7 @@ export const useActivities = () => {
   };
 
   const updateActivity = (activityId, updates) => {
-    setActivities((prev) =>
-      prev.map((a) => (a.id === activityId ? { ...a, ...updates } : a))
-    );
+    setActivities((prev) => prev.map((a) => (a.id === activityId ? { ...a, ...updates } : a)));
   };
 
   const deleteActivity = (activityId) => {
