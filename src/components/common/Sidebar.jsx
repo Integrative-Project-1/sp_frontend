@@ -8,18 +8,26 @@ import {
   Settings,
   Plus,
   GraduationCap,
+  LogOut,
 } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 const Sidebar = () => {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
-  // Configuración de los links del menú traducidos
   const menuItems = [
     { name: 'Panel Principal', icon: LayoutDashboard, path: '/' },
     { name: 'Calendario', icon: Calendar, path: '/calendario' },
     { name: 'Cursos', icon: BookOpen, path: '/cursos' },
     { name: 'Evaluaciones', icon: FileCheck, path: '/evaluaciones' },
+    { name: 'Capacidad', icon: Settings, path: '/capacidad' },
   ];
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
 
   return (
     <aside className="w-64 h-screen bg-[#0f172a] border-r border-gray-800 flex flex-col p-6 sticky top-0">
@@ -34,15 +42,14 @@ const Sidebar = () => {
       {/* User Profile Section */}
       <div className="flex items-center gap-3 mb-10 px-2">
         <div className="w-12 h-12 rounded-full bg-orange-100 border-2 border-orange-200 flex items-center justify-center overflow-hidden">
-          {/* Imagen de perfil placeholder */}
           <img
-            src="https://api.dicebear.com/7.x/avataaars/svg?seed=Jorge"
+            src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.username || 'user'}`}
             alt="Avatar de usuario"
           />
         </div>
         <div>
-          <h4 className="text-white font-semibold text-sm">Jorge</h4>
-          <p className="text-gray-500 text-xs">Ingeniería de Sistemas</p>
+          <h4 className="text-white font-semibold text-sm">{user?.username || '—'}</h4>
+          <p className="text-gray-500 text-xs">{user?.email || ''}</p>
         </div>
       </div>
 
@@ -67,13 +74,24 @@ const Sidebar = () => {
         ))}
       </nav>
 
-      {/* Action Button (US-01 Entry Point) */}
+      {/* Action Button */}
       <button
+        type="button"
         onClick={() => navigate('/crear')}
-        className="mt-auto bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-semibold shadow-lg shadow-blue-500/20 transition-all active:scale-95"
+        className="mt-6 bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-semibold shadow-lg shadow-blue-500/20 transition-all active:scale-95"
       >
         <Plus size={20} />
         Nueva Actividad
+      </button>
+
+      {/* Logout */}
+      <button
+        type="button"
+        onClick={handleLogout}
+        className="mt-2 flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-gray-800 hover:text-red-400 transition-all duration-200 w-full"
+      >
+        <LogOut size={20} />
+        <span className="font-medium text-sm">Cerrar sesión</span>
       </button>
     </aside>
   );

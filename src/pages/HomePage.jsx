@@ -9,6 +9,7 @@ import {
   HelpCircle,
   AlertCircle,
   RotateCcw,
+  X,
 } from 'lucide-react';
 import StatCard from '../components/dashboard/StatCard';
 import UrgentTaskCard from '../components/dashboard/UrgentTaskCard';
@@ -16,6 +17,7 @@ import LoadingSpinner from '../components/common/LoadingSpinner';
 import { useActivities } from '../hooks/useActivities';
 import { useToast } from '../context/ToastContext';
 import { groupAndSortActivities, SORTING_RULE_TEXT } from '../utils/activityGrouping';
+import { useFilters } from '../hooks/useFilters';
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -23,8 +25,28 @@ const HomePage = () => {
   const { activities, loading, updateActivity, deleteActivity, error, retry } = useActivities();
   const [showRule, setShowRule] = useState(false);
   const [expandedId, setExpandedId] = useState(null);
+  const [search, setSearch] = useState('');
 
-  const { vencidas, paraHoy, proximas, terminadasHoy } = groupAndSortActivities(activities);
+  const {
+    filtered,
+    courses,
+    filterCourse,
+    setFilterCourse,
+    filterStatus,
+    setFilterStatus,
+    clearFilters,
+    hasActiveFilters,
+  } = useFilters(activities);
+
+  const searchFiltered = search.trim()
+    ? filtered.filter(
+        (a) =>
+          a.title?.toLowerCase().includes(search.toLowerCase()) ||
+          a.course?.toLowerCase().includes(search.toLowerCase())
+      )
+    : filtered;
+
+  const { vencidas, paraHoy, proximas, terminadasHoy } = groupAndSortActivities(searchFiltered);
   const hasAnyActivities =
     vencidas.length > 0 || paraHoy.length > 0 || proximas.length > 0 || terminadasHoy.length > 0;
 
@@ -78,10 +100,52 @@ const HomePage = () => {
       <div className="relative max-w-xl">
         <Search className="absolute left-4 top-3 text-gray-500" size={20} />
         <input
+          id="search"
           type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
           placeholder="Buscar tareas, cursos o notas..."
           className="w-full bg-[#1e293b]/50 border border-gray-800 rounded-2xl py-3 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
         />
+      </div>
+
+      {/* Filtros */}
+      <div className="flex flex-wrap items-center gap-3">
+        <select
+          aria-label="Filtrar por curso"
+          value={filterCourse}
+          onChange={(e) => setFilterCourse(e.target.value)}
+          className="bg-[#1e293b]/50 border border-gray-800 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+        >
+          <option value="">Todos los cursos</option>
+          {courses.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+
+        <select
+          aria-label="Filtrar por estado"
+          value={filterStatus}
+          onChange={(e) => setFilterStatus(e.target.value)}
+          className="bg-[#1e293b]/50 border border-gray-800 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+        >
+          <option value="">Todos los estados</option>
+          <option value="pending">Pendientes</option>
+          <option value="done">Completadas</option>
+        </select>
+
+        {hasActiveFilters && (
+          <button
+            type="button"
+            onClick={clearFilters}
+            className="flex items-center gap-1 px-3 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm transition-colors"
+          >
+            <X size={14} />
+            Limpiar
+          </button>
+        )}
       </div>
 
       <header>
@@ -145,10 +209,25 @@ const HomePage = () => {
       {/* Estado vacío */}
       {!hasAnyActivities && (
         <div className="p-12 border-2 border-dashed border-gray-800 rounded-2xl text-center">
-          <p className="text-gray-500">No tienes actividades programadas.</p>
-          <p className="text-gray-500 text-sm mt-2">
-            Usa el botón &quot;Nueva Actividad&quot; en el menú para crear una.
-          </p>
+          {hasActiveFilters || search.trim() ? (
+            <>
+              <p className="text-gray-500">No hay actividades que coincidan con los filtros.</p>
+              <button
+                type="button"
+                onClick={() => { clearFilters(); setSearch(''); }}
+                className="mt-3 text-blue-400 hover:text-blue-300 text-sm transition-colors"
+              >
+                Limpiar filtros
+              </button>
+            </>
+          ) : (
+            <>
+              <p className="text-gray-500">No tienes actividades programadas.</p>
+              <p className="text-gray-500 text-sm mt-2">
+                Usa el botón &quot;Nueva Actividad&quot; en el menú para crear una.
+              </p>
+            </>
+          )}
         </div>
       )}
 
