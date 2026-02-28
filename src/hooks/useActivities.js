@@ -48,7 +48,8 @@ export const useActivities = () => {
     try {
       const data = await svc.getActivities();
       const list = Array.isArray(data) ? data : data.results || [];
-      setActivities(list.map(apiToUI));
+      const details = await Promise.all(list.map((a) => svc.getActivity(a.id)));
+      setActivities(details.map(apiToUI));
       setError(null);
     } catch (e) {
       setError(e?.response?.data?.detail || e?.message || 'Error al cargar actividades');
