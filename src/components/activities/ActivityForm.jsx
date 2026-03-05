@@ -244,17 +244,6 @@ const ActivityForm = ({ onSubmit, onCancel, initialData }) => {
                   key={milestone.id}
                   className="flex flex-wrap items-center gap-2 sm:gap-3 bg-[#1e293b] border border-gray-700 rounded-xl px-4 py-3 group"
                 >
-                  <button
-                    type="button"
-                    onClick={() => updateMilestone(milestone.id, 'completed', !milestone.completed)}
-                    className={`w-5 h-5 rounded border-2 flex-shrink-0 flex items-center justify-center transition-colors ${
-                      milestone.completed
-                        ? 'bg-blue-500 border-blue-500 text-white'
-                        : 'border-gray-600 hover:border-gray-500'
-                    }`}
-                  >
-                    {milestone.completed && <Check size={12} strokeWidth={3} />}
-                  </button>
                   <input
                     type="text"
                     value={milestone.text}
