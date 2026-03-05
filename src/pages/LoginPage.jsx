@@ -3,8 +3,7 @@ import { useNavigate, Navigate } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, ArrowRight, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-// Imagen de fondo del lado izquierdo — reemplazar con asset local en producción
-const IMG_HERO = 'http://localhost:3845/assets/c8992bb87cac622acd1f98a14c33eed6d8308ab5.png';
+const IMG_HERO = '/login-hero.png';
 
 const LoginPage = () => {
   const navigate = useNavigate();
