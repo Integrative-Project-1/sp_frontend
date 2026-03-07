@@ -174,13 +174,6 @@ const LoginPage = () => {
                 >
                   Contraseña
                 </label>
-                <button
-                  type="button"
-                  className="text-[#2b9dee]"
-                  style={{ fontWeight: 600, fontSize: '12px', lineHeight: '16px' }}
-                >
-                  ¿Olvidaste tu contraseña?
-                </button>
               </div>
               <div className="relative">
                 <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
