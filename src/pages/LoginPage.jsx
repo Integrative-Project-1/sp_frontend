@@ -254,15 +254,6 @@ const LoginPage = () => {
           </form>
 
           {/* Hint credenciales demo */}
-          <p
-            className="mt-6 text-center text-[#64748b]"
-            style={{ fontSize: '12px', lineHeight: '16px' }}
-          >
-            Usuarios:{' '}
-            <span className="text-[#94a3b8]">demo / demo123</span>
-            {' · '}
-            <span className="text-[#94a3b8]">student / study2024</span>
-          </p>
 
           {/* Legal */}
           <p
