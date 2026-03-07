@@ -249,20 +249,6 @@ const LoginPage = () => {
           {/* Hint credenciales demo */}
 
           {/* Legal */}
-          <p
-            className="mt-4 text-center text-[#94a3b8]"
-            style={{ fontSize: '14px', lineHeight: '20px' }}
-          >
-            Al continuar, aceptas los{' '}
-            <span className="text-[#e2e8f0] underline decoration-solid cursor-pointer">
-              Términos de Servicio
-            </span>{' '}
-            y la{' '}
-            <span className="text-[#e2e8f0] underline decoration-solid cursor-pointer">
-              Política de Privacidad
-            </span>{' '}
-            de StudyPlan.
-          </p>
         </div>
       </div>
     </div>
