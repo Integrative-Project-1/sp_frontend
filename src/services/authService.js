@@ -1,23 +1,21 @@
-// Mock: simula login con usuario demo
-// Reemplazar implementación por llamadas reales cuando el backend esté listo
+import axios from 'axios';
 
-const MOCK_USER = { id: 1, username: 'demo', email: 'demo@example.com' };
-const MOCK_PASSWORD = 'demo123';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
 const TOKEN_KEY = 'sp_token';
 const USER_KEY = 'sp_user';
 
 export const login = async ({ username, password }) => {
-  await new Promise((r) => setTimeout(r, 600));
-
-  if (username === MOCK_USER.username && password === MOCK_PASSWORD) {
-    const token = 'mock-token-' + Date.now();
-    localStorage.setItem(TOKEN_KEY, token);
-    localStorage.setItem(USER_KEY, JSON.stringify(MOCK_USER));
-    return { user: MOCK_USER, token };
+  try {
+    const { data } = await axios.post(`${API_BASE_URL}/auth/login/`, { username, password });
+    localStorage.setItem(TOKEN_KEY, data.token);
+    localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+    return { user: data.user, token: data.token };
+  } catch (err) {
+    const message = err.response?.data?.detail || 'Credenciales inválidas.';
+    const error = new Error(message);
+    error.status = err.response?.status || 401;
+    throw error;
   }
-  const err = new Error('Credenciales inválidas.');
-  err.status = 401;
-  throw err;
 };
 
 export const logout = async () => {

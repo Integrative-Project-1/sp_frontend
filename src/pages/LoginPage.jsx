@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
-import { Mail, Lock, Eye, EyeOff, ArrowRight, Loader2 } from 'lucide-react';
+import { User, Lock, Eye, EyeOff, ArrowRight, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const IMG_HERO = '/login-hero.png';
@@ -138,11 +138,11 @@ const LoginPage = () => {
                 className="text-[#cbd5e1]"
                 style={{ fontWeight: 500, fontSize: '14px', lineHeight: '20px' }}
               >
-                Correo electrónico
+                Usuario
               </label>
               <div className="relative">
                 <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                  <Mail size={16} className="text-[#6b7280]" />
+                  <User size={16} className="text-[#6b7280]" />
                 </div>
                 <input
                   id="username"
@@ -151,7 +151,7 @@ const LoginPage = () => {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   disabled={loading}
-                  placeholder="nombre@ejemplo.com"
+                  placeholder="tu_usuario"
                   className="w-full pl-[49px] pr-[17px] py-[17px] rounded-[48px] text-white outline-none focus:ring-2 focus:ring-[#2b9dee]/50"
                   style={{
                     backgroundColor: 'rgba(30,41,59,0.5)',
@@ -258,8 +258,10 @@ const LoginPage = () => {
             className="mt-6 text-center text-[#64748b]"
             style={{ fontSize: '12px', lineHeight: '16px' }}
           >
-            Usuario demo:{' '}
+            Usuarios:{' '}
             <span className="text-[#94a3b8]">demo / demo123</span>
+            {' · '}
+            <span className="text-[#94a3b8]">student / study2024</span>
           </p>
 
           {/* Legal */}

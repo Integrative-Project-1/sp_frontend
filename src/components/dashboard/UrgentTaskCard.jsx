@@ -207,6 +207,11 @@ const UrgentTaskCard = ({
                       }`}
                     >
                       {milestone.text || '(Sin título)'}
+                      {milestone.targetDate && (
+                        <span className="ml-2 text-xs text-gray-500">
+                          · {formatCountdown(milestone.targetDate)}
+                        </span>
+                      )}
                     </span>
                   )}
                   <button
