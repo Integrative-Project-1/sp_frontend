@@ -21,6 +21,7 @@ const apiToUI = (activity) => ({
   eventDate: activity.deadline,
   startTime: activity.event_date || '',
   milestones: (activity.subtasks || []).map((s) => ({
+    id: String(s.id),
     text: s.name,
     completed: s.status === 'done',
     targetDate: s.target_date,
@@ -91,10 +92,18 @@ export const useActivities = () => {
     }
   };
 
+  const rescheduleSubtask = async (activityId, subtaskId, { targetDate, estimatedHours }) => {
+    await svc.updateSubtask(activityId, subtaskId, {
+      target_date: targetDate,
+      estimated_hours: estimatedHours,
+    });
+    await fetchActivities();
+  };
+
   const deleteActivity = async (activityId) => {
     await svc.deleteActivity(activityId);
     setActivities((prev) => prev.filter((a) => a.id !== String(activityId)));
   };
 
-  return { activities, loading, addActivity, updateActivity, deleteActivity, error, retry };
+  return { activities, loading, addActivity, updateActivity, deleteActivity, rescheduleSubtask, error, retry };
 };

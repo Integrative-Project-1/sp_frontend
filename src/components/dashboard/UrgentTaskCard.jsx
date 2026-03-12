@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
-import { AlertCircle, ChevronDown, ChevronUp, Check, Trash2, Pencil } from 'lucide-react';
+import { AlertCircle, ChevronDown, ChevronUp, Check, Trash2, Pencil, CalendarDays } from 'lucide-react';
 import { format, parseISO, differenceInCalendarDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 import ConfirmModal from '../common/ConfirmModal';
+import RescheduleModal from '../subtask/RescheduleModal';
 import { useToast } from '../../context/ToastContext';
+import { useActivitiesContext } from '../../context/ActivitiesContext';
+import { useSubtaskReschedule } from '../../hooks/useSubtaskReschedule';
 
 const formatDeadline = (dateStr) => {
   if (!dateStr) return '';
@@ -64,6 +67,10 @@ const UrgentTaskCard = ({
   variant = 'vencidas', // vencidas | paraHoy | proximas | terminadas
 }) => {
   const { showSuccess } = useToast();
+  const { activities, rescheduleSubtask } = useActivitiesContext();
+  const { dailyLimit } = useSubtaskReschedule();
+  const [rescheduleTarget, setRescheduleTarget] = useState(null); // milestone | null
+
   const title = activity?.title || activity?.activityTitle;
   const course = activity?.course;
   const deadline = activity?.eventDate;
@@ -218,6 +225,17 @@ const UrgentTaskCard = ({
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
+                      setRescheduleTarget(milestone);
+                    }}
+                    aria-label={`Reprogramar subtarea: ${milestone.text}`}
+                    className="text-gray-500 hover:text-blue-400 transition-colors p-1"
+                  >
+                    <CalendarDays size={16} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
                       setConfirmDelete({ type: 'milestone', index });
                     }}
                     className="text-gray-500 hover:text-red-400 transition-colors p-1"
@@ -287,6 +305,19 @@ const UrgentTaskCard = ({
             confirmLabel="Eliminar"
             variant="danger"
           />
+          {rescheduleTarget && (
+            <RescheduleModal
+              milestone={rescheduleTarget}
+              activityId={activity.id}
+              activities={activities}
+              dailyLimit={dailyLimit}
+              onSave={async (activityId, subtaskId, data) => {
+                await rescheduleSubtask(activityId, subtaskId, data);
+                showSuccess('Subtarea reprogramada correctamente');
+              }}
+              onClose={() => setRescheduleTarget(null)}
+            />
+          )}
         </div>
       )}
     </div>
