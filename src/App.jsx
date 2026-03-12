@@ -5,6 +5,7 @@ import { RouterProvider } from 'react-router-dom';
 import { router } from './router';
 import { ToastProvider } from './context/ToastContext';
 import { AuthProvider } from './context/AuthContext';
+import { ActivitiesProvider } from './context/ActivitiesContext';
 
 function App() {
   return (
@@ -13,7 +14,9 @@ function App() {
         <CssBaseline />
         <AuthProvider>
           <ToastProvider>
-            <RouterProvider router={router} />
+            <ActivitiesProvider>
+              <RouterProvider router={router} />
+            </ActivitiesProvider>
           </ToastProvider>
         </AuthProvider>
       </ThemeProvider>

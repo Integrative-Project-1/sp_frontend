@@ -1,5 +1,5 @@
 import { createContext, useContext, useState } from 'react';
-import { login as svcLogin, logout as svcLogout, getStoredUser } from '../services/authService';
+import { login as svcLogin, logout as svcLogout, register as svcRegister, getStoredUser } from '../services/authService';
 
 const AuthContext = createContext(null);
 
@@ -22,13 +22,27 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const register = async (data) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { user: u } = await svcRegister(data);
+      setUser(u);
+    } catch (e) {
+      setError(e.message || 'Error al crear la cuenta.');
+      throw e;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const logout = async () => {
     await svcLogout();
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, error, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, error, login, logout, register }}>
       {children}
     </AuthContext.Provider>
   );

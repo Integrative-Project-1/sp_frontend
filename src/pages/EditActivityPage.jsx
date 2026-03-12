@@ -1,7 +1,7 @@
 import React from 'react';
 import ActivityForm from '../components/activities/ActivityForm';
 import LoadingSpinner from '../components/common/LoadingSpinner';
-import { useActivities } from '../hooks/useActivities';
+import { useActivitiesContext as useActivities } from '../context/ActivitiesContext';
 import { useToast } from '../context/ToastContext';
 import { useNavigate, useParams } from 'react-router-dom';
 

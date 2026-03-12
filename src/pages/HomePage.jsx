@@ -10,11 +10,12 @@ import {
   AlertCircle,
   RotateCcw,
   X,
+  Plus,
 } from 'lucide-react';
 import StatCard from '../components/dashboard/StatCard';
 import UrgentTaskCard from '../components/dashboard/UrgentTaskCard';
 import LoadingSpinner from '../components/common/LoadingSpinner';
-import { useActivities } from '../hooks/useActivities';
+import { useActivitiesContext as useActivities } from '../context/ActivitiesContext';
 import { useToast } from '../context/ToastContext';
 import { groupAndSortActivities, SORTING_RULE_TEXT } from '../utils/activityGrouping';
 import { useFilters } from '../hooks/useFilters';
@@ -223,9 +224,15 @@ const HomePage = () => {
           ) : (
             <>
               <p className="text-gray-500">No tienes actividades programadas.</p>
-              <p className="text-gray-500 text-sm mt-2">
-                Usa el botón &quot;Nueva Actividad&quot; en el menú para crear una.
-              </p>
+              <p className="text-gray-500 text-sm mt-2">Comienza creando tu primera actividad.</p>
+              <button
+                type="button"
+                onClick={() => navigate('/crear')}
+                className="mt-6 bg-blue-500 hover:bg-blue-600 text-white inline-flex items-center gap-2 py-3 px-6 rounded-xl font-semibold shadow-lg shadow-blue-500/20 transition-all active:scale-95"
+              >
+                <Plus size={20} />
+                Nueva Actividad
+              </button>
             </>
           )}
         </div>

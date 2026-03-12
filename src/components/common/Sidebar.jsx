@@ -11,10 +11,13 @@ import {
   LogOut,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useActivitiesContext as useActivities } from '../../context/ActivitiesContext';
 
 const Sidebar = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { activities } = useActivities();
+  const hasActivities = activities && activities.length > 0;
 
   const menuItems = [
     { name: 'Panel Principal', icon: LayoutDashboard, path: '/' },
@@ -47,9 +50,9 @@ const Sidebar = () => {
             alt="Avatar de usuario"
           />
         </div>
-        <div>
-          <h4 className="text-white font-semibold text-sm">{user?.username || '—'}</h4>
-          <p className="text-gray-500 text-xs">{user?.email || ''}</p>
+        <div className="min-w-0">
+          <h4 className="text-white font-semibold text-sm truncate">{user?.username || '—'}</h4>
+          <p className="text-gray-500 text-xs truncate">{user?.email || ''}</p>
         </div>
       </div>
 
@@ -74,15 +77,17 @@ const Sidebar = () => {
         ))}
       </nav>
 
-      {/* Action Button */}
-      <button
-        type="button"
-        onClick={() => navigate('/crear')}
-        className="mt-6 bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-semibold shadow-lg shadow-blue-500/20 transition-all active:scale-95"
-      >
-        <Plus size={20} />
-        Nueva Actividad
-      </button>
+      {/* Action Button — solo visible cuando ya hay actividades */}
+      {hasActivities && (
+        <button
+          type="button"
+          onClick={() => navigate('/crear')}
+          className="mt-6 bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-semibold shadow-lg shadow-blue-500/20 transition-all active:scale-95"
+        >
+          <Plus size={20} />
+          Nueva Actividad
+        </button>
+      )}
 
       {/* Logout */}
       <button

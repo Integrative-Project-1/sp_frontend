@@ -1,6 +1,6 @@
 import React from 'react';
 import ActivityForm from '../components/activities/ActivityForm';
-import { useActivities } from '../hooks/useActivities';
+import { useActivitiesContext as useActivities } from '../context/ActivitiesContext';
 import { useToast } from '../context/ToastContext';
 import { useNavigate } from 'react-router-dom';
 
