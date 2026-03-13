@@ -1,20 +1,26 @@
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap');
 @import 'tailwindcss';
 
 :root {
-  background-color: #0b0f1a; /* El color oscuro de tu diseño */
+  background-color: #001507;
   color: white;
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Lexend', 'Segoe UI', sans-serif;
 }
 
 body {
   margin: 0;
-  background-color: #0b0f1a;
+  background: radial-gradient(circle at top, #0A753F 0%, #06592F 26%, #01230F 62%, #001507 100%);
+  min-height: 100vh;
 }
 @tailwind utilities;
 
 :root {
-  background-color: #0b0f1a; /* Fuerza el fondo desde el nivel raíz */
+  background-color: #001507;
   color: white;
+}
+
+#root {
+  min-height: 100vh;
 }
 
 @keyframes toast-in {

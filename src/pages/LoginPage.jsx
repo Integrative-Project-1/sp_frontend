@@ -7,10 +7,10 @@ const IMG_HERO = '/login-hero.png';
 
 /* ── shared input styles ─────────────────────────────────────────────── */
 const inputClass =
-  'w-full py-[17px] rounded-[48px] text-white outline-none focus:ring-2 focus:ring-[#2b9dee]/50';
+  'w-full py-[17px] rounded-[48px] text-white outline-none focus:ring-2 focus:ring-[#24FB8F]/40';
 const inputStyle = {
-  backgroundColor: 'rgba(30,41,59,0.5)',
-  border: '1px solid #334155',
+  backgroundColor: 'rgba(1,35,15,0.55)',
+  border: '1px solid #14532d',
   fontFamily: "'Lexend', sans-serif",
   fontSize: '16px',
 };
@@ -19,7 +19,7 @@ const inputStyle = {
 const TabBar = ({ active, onChange }) => (
   <div
     className="flex mb-8 rounded-[48px] p-1"
-    style={{ backgroundColor: 'rgba(30,41,59,0.5)', border: '1px solid #334155' }}
+    style={{ backgroundColor: 'rgba(1,35,15,0.55)', border: '1px solid #14532d' }}
   >
     {['login', 'register'].map((tab) => {
       const label = tab === 'login' ? 'Iniciar sesión' : 'Crear cuenta';
@@ -34,10 +34,10 @@ const TabBar = ({ active, onChange }) => (
             fontFamily: "'Lexend', sans-serif",
             fontWeight: isActive ? 700 : 400,
             fontSize: '15px',
-            color: isActive ? '#fff' : '#94a3b8',
-            backgroundColor: isActive ? '#2b9dee' : 'transparent',
+            color: isActive ? '#001507' : '#A7D8BF',
+            backgroundColor: isActive ? '#24FB8F' : 'transparent',
             boxShadow: isActive
-              ? '0px 4px 6px -4px rgba(43,157,238,0.4)'
+              ? '0px 4px 6px -4px rgba(36,251,143,0.4)'
               : 'none',
           }}
         >
@@ -140,7 +140,7 @@ const LoginForm = () => {
             <button
               type="button"
               onClick={() => setShowPassword((v) => !v)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-[#6b7280] hover:text-[#94a3b8] transition-colors"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-[#6b7280] hover:text-[#24FB8F] transition-colors"
               aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
             >
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -164,12 +164,12 @@ const LoginForm = () => {
           aria-busy={loading}
           className="relative w-full flex items-center justify-center gap-2 py-[16px] rounded-[48px] text-white transition-opacity disabled:opacity-60 disabled:cursor-not-allowed"
           style={{
-            backgroundColor: '#2b9dee',
+            backgroundColor: '#0F8F4F',
             fontWeight: 700,
             fontSize: '16px',
             lineHeight: '24px',
             fontFamily: "'Lexend', sans-serif",
-            boxShadow: '0px 10px 15px -3px rgba(43,157,238,0.2), 0px 4px 6px -4px rgba(43,157,238,0.2)',
+            boxShadow: '0px 10px 15px -3px rgba(15,143,79,0.25), 0px 4px 6px -4px rgba(15,143,79,0.2)',
           }}
         >
           {loading ? (
@@ -315,7 +315,7 @@ const RegisterForm = () => {
             <button
               type="button"
               onClick={() => setShowPassword((v) => !v)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-[#6b7280] hover:text-[#94a3b8] transition-colors"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-[#6b7280] hover:text-[#24FB8F] transition-colors"
               aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
             >
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -350,7 +350,7 @@ const RegisterForm = () => {
             <button
               type="button"
               onClick={() => setShowConfirm((v) => !v)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-[#6b7280] hover:text-[#94a3b8] transition-colors"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-[#6b7280] hover:text-[#24FB8F] transition-colors"
               aria-label={showConfirm ? 'Ocultar contraseña' : 'Mostrar contraseña'}
             >
               {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -374,12 +374,12 @@ const RegisterForm = () => {
           aria-busy={loading}
           className="relative w-full flex items-center justify-center gap-2 py-[16px] rounded-[48px] text-white transition-opacity disabled:opacity-60 disabled:cursor-not-allowed"
           style={{
-            backgroundColor: '#2b9dee',
+            backgroundColor: '#0F8F4F',
             fontWeight: 700,
             fontSize: '16px',
             lineHeight: '24px',
             fontFamily: "'Lexend', sans-serif",
-            boxShadow: '0px 10px 15px -3px rgba(43,157,238,0.2), 0px 4px 6px -4px rgba(43,157,238,0.2)',
+            boxShadow: '0px 10px 15px -3px rgba(15,143,79,0.25), 0px 4px 6px -4px rgba(15,143,79,0.2)',
           }}
         >
           {loading ? (
@@ -409,12 +409,12 @@ const LoginPage = () => {
   return (
     <div
       className="flex min-h-screen w-full"
-      style={{ backgroundColor: '#101a22', fontFamily: "'Lexend', sans-serif" }}
+      style={{ backgroundColor: '#001507', fontFamily: "'Lexend', sans-serif" }}
     >
       {/* ── Columna izquierda: ilustración ── */}
       <div
         className="relative hidden lg:flex flex-1 items-end overflow-hidden"
-        style={{ backgroundColor: 'rgba(43,157,238,0.1)' }}
+        style={{ backgroundColor: 'rgba(15,143,79,0.18)' }}
       >
         <img
           src={IMG_HERO}
@@ -426,14 +426,14 @@ const LoginPage = () => {
           className="absolute inset-0"
           style={{
             background:
-              'linear-gradient(to top, #101a22 0%, rgba(16,26,34,0.2) 50%, rgba(16,26,34,0) 100%)',
+              'linear-gradient(to top, #001507 0%, rgba(0,21,7,0.2) 50%, rgba(0,21,7,0) 100%)',
           }}
         />
         <div className="relative z-10 p-[80px] w-full">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-[38px] h-[32px] bg-[#2b9dee] rounded-lg flex items-center justify-center">
+            <div className="w-[38px] h-[32px] bg-[#24FB8F] rounded-lg flex items-center justify-center">
               <svg width="22" height="18" viewBox="0 0 22 18" fill="none">
-                <path d="M11 0L22 6V18H15V11H7V18H0V6L11 0Z" fill="white" />
+                <path d="M11 0L22 6V18H15V11H7V18H0V6L11 0Z" fill="#001507" />
               </svg>
             </div>
             <span
@@ -455,7 +455,7 @@ const LoginPage = () => {
           </div>
           <p
             className="max-w-[512px]"
-            style={{ fontWeight: 400, fontSize: '20px', lineHeight: '28px', color: '#cbd5e1' }}
+            style={{ fontWeight: 400, fontSize: '20px', lineHeight: '28px', color: '#C2FFD9' }}
           >
             Únete a una comunidad de estudiantes dedicados y toma el control de tu futuro académico
             con nuestras herramientas avanzadas de planificación.
@@ -466,15 +466,15 @@ const LoginPage = () => {
       {/* ── Columna derecha: formulario ── */}
       <div
         className="flex flex-1 items-center justify-center p-6 lg:p-[96px]"
-        style={{ backgroundColor: '#101a22' }}
+        style={{ backgroundColor: '#001507' }}
       >
         <div className="w-full" style={{ maxWidth: '448px' }}>
 
           {/* Logo (solo en móvil) */}
           <div className="flex items-center gap-3 mb-10 lg:hidden">
-            <div className="w-[38px] h-[32px] bg-[#2b9dee] rounded-lg flex items-center justify-center">
+            <div className="w-[38px] h-[32px] bg-[#24FB8F] rounded-lg flex items-center justify-center">
               <svg width="22" height="18" viewBox="0 0 22 18" fill="none">
-                <path d="M11 0L22 6V18H15V11H7V18H0V6L11 0Z" fill="white" />
+                <path d="M11 0L22 6V18H15V11H7V18H0V6L11 0Z" fill="#001507" />
               </svg>
             </div>
             <span

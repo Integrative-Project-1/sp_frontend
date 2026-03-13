@@ -4,9 +4,36 @@ import { detectConflict } from '../../utils/conflictDetection';
 
 const inputStyle = {
   backgroundColor: 'rgba(15,23,42,0.8)',
-  border: '1px solid #334155',
+  border: '1px solid #14532d',
   fontFamily: "'Lexend', sans-serif",
   colorScheme: 'dark',
+};
+
+const formatAsYmd = (date) => {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+};
+
+const findNextDateWithCapacity = (activities, subtask, startDate, dailyLimit) => {
+  const seed = new Date(startDate);
+  if (Number.isNaN(seed.getTime())) return null;
+
+  for (let i = 1; i <= 30; i += 1) {
+    const candidate = new Date(seed);
+    candidate.setDate(seed.getDate() + i);
+    const candidateStr = formatAsYmd(candidate);
+    const candidateConflict = detectConflict(activities, subtask, candidateStr, dailyLimit);
+    if (!candidateConflict.hasConflict) {
+      return {
+        date: candidateStr,
+        totalHours: candidateConflict.newTotal,
+      };
+    }
+  }
+
+  return null;
 };
 
 /**
@@ -23,6 +50,7 @@ const inputStyle = {
 const RescheduleModal = ({ milestone, activityId, activities, dailyLimit, onSave, onClose }) => {
   const [newDate, setNewDate] = useState(milestone.targetDate || '');
   const [newHours, setNewHours] = useState(String(milestone.estimatedEffort ?? 1));
+  const [resolutionOption, setResolutionOption] = useState('manual');
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState(null);
   const firstFocusRef = useRef(null);
@@ -62,6 +90,35 @@ const RescheduleModal = ({ milestone, activityId, activities, dailyLimit, onSave
     ? detectConflict(activities, subtaskForDetection, newDate, dailyLimit)
     : null;
 
+  const nextAvailable = conflict?.hasConflict
+    ? findNextDateWithCapacity(activities, subtaskForDetection, newDate, dailyLimit)
+    : null;
+
+  const availableHoursToday = conflict
+    ? Math.max(0, conflict.limit - conflict.currentHours)
+    : 0;
+  const suggestedReducedHours = Math.max(0, Math.floor(availableHoursToday * 2) / 2);
+  const canReduceHours = conflict?.hasConflict && suggestedReducedHours >= 0.5;
+
+  useEffect(() => {
+    if (!conflict?.hasConflict) {
+      setResolutionOption('manual');
+      return;
+    }
+
+    if (nextAvailable) {
+      setResolutionOption('move-date');
+      return;
+    }
+
+    if (canReduceHours) {
+      setResolutionOption('reduce-hours');
+      return;
+    }
+
+    setResolutionOption('manual');
+  }, [conflict?.hasConflict, nextAvailable, canReduceHours]);
+
   const loadPercent = conflict
     ? Math.min(100, Math.round((conflict.newTotal / conflict.limit) * 100))
     : 0;
@@ -70,9 +127,26 @@ const RescheduleModal = ({ milestone, activityId, activities, dailyLimit, onSave
 
   const handleSave = async () => {
     setSaveError(null);
+    let resolvedDate = newDate;
+    let resolvedHours = hours;
+
+    if (conflict?.hasConflict) {
+      if (resolutionOption === 'move-date' && nextAvailable) {
+        resolvedDate = nextAvailable.date;
+      } else if (resolutionOption === 'reduce-hours' && canReduceHours) {
+        resolvedHours = suggestedReducedHours;
+      } else {
+        setSaveError('Selecciona una alternativa para resolver la sobrecarga antes de guardar.');
+        return;
+      }
+    }
+
     setSaving(true);
     try {
-      await onSave(activityId, milestone.id, { targetDate: newDate, estimatedHours: hours });
+      await onSave(activityId, milestone.id, {
+        targetDate: resolvedDate,
+        estimatedHours: resolvedHours,
+      });
       onClose();
     } catch (e) {
       setSaveError(e?.response?.data?.detail || e?.message || 'Error al guardar.');
@@ -97,8 +171,8 @@ const RescheduleModal = ({ milestone, activityId, activities, dailyLimit, onSave
         className="w-full rounded-2xl p-6 shadow-2xl"
         style={{
           maxWidth: '440px',
-          backgroundColor: '#1e293b',
-          border: '1px solid #334155',
+          backgroundColor: '#0A1D14',
+          border: '1px solid #14532D',
           fontFamily: "'Lexend', sans-serif",
         }}
       >
@@ -108,7 +182,7 @@ const RescheduleModal = ({ milestone, activityId, activities, dailyLimit, onSave
             id="reschedule-title"
             className="text-white font-bold text-lg flex items-center gap-2"
           >
-            <CalendarDays size={20} className="text-blue-400" />
+            <CalendarDays size={20} className="text-emerald-300" />
             Reprogramar subtarea
           </h2>
           <button
@@ -124,7 +198,7 @@ const RescheduleModal = ({ milestone, activityId, activities, dailyLimit, onSave
         {/* Subtask name */}
         <p
           className="text-gray-300 text-sm mb-5 px-3 py-2 rounded-lg"
-          style={{ backgroundColor: 'rgba(15,23,42,0.5)', border: '1px solid #1e3a5f' }}
+          style={{ backgroundColor: 'rgba(0,21,7,0.45)', border: '1px solid #14532d' }}
         >
           {milestone.text || '(Sin título)'}
         </p>
@@ -145,8 +219,11 @@ const RescheduleModal = ({ milestone, activityId, activities, dailyLimit, onSave
               id="reschedule-date"
               type="date"
               value={newDate}
-              onChange={(e) => setNewDate(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-xl text-white text-sm outline-none focus:ring-2 focus:ring-blue-500/50"
+              onChange={(e) => {
+                setNewDate(e.target.value);
+                setResolutionOption('manual');
+              }}
+              className="w-full px-3 py-2.5 rounded-xl text-white text-sm outline-none focus:ring-2 focus:ring-emerald-500/50"
               style={inputStyle}
             />
           </div>
@@ -167,8 +244,11 @@ const RescheduleModal = ({ milestone, activityId, activities, dailyLimit, onSave
               max="24"
               step="0.5"
               value={newHours}
-              onChange={(e) => setNewHours(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-xl text-white text-sm outline-none focus:ring-2 focus:ring-blue-500/50"
+              onChange={(e) => {
+                setNewHours(e.target.value);
+                setResolutionOption('manual');
+              }}
+              className="w-full px-3 py-2.5 rounded-xl text-white text-sm outline-none focus:ring-2 focus:ring-emerald-500/50"
               style={inputStyle}
             />
           </div>
@@ -192,7 +272,7 @@ const RescheduleModal = ({ milestone, activityId, activities, dailyLimit, onSave
                 className="h-full rounded-full transition-all duration-300"
                 style={{
                   width: `${loadPercent}%`,
-                  backgroundColor: conflict.hasConflict ? '#ef4444' : '#22c55e',
+                  backgroundColor: conflict.hasConflict ? '#ef4444' : '#1dd779',
                 }}
               />
             </div>
@@ -206,18 +286,69 @@ const RescheduleModal = ({ milestone, activityId, activities, dailyLimit, onSave
               >
                 <AlertTriangle size={16} className="flex-shrink-0 mt-0.5 text-red-400" />
                 <span>
-                  Quedarías con <strong>{conflict.newTotal}h</strong> planificadas (límite{' '}
-                  <strong>{conflict.limit}h</strong>). Ajusta la fecha o reduce las horas estimadas.
+                  Conflicto de sobrecarga: ese día quedarías con <strong>{conflict.newTotal}h</strong>{' '}
+                  planificadas, pero tu límite es <strong>{conflict.limit}h</strong>. Elige una alternativa
+                  para resolverlo.
                 </span>
               </div>
             ) : (
               <div
                 role="status"
                 className="mt-3 flex items-center gap-2 p-3 rounded-xl text-sm text-emerald-300"
-                style={{ backgroundColor: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)' }}
+                style={{ backgroundColor: 'rgba(29,215,121,0.1)', border: '1px solid rgba(29,215,121,0.3)' }}
               >
                 <CheckCircle2 size={16} className="text-emerald-400" />
                 Sin sobrecarga para ese día.
+              </div>
+            )}
+          </div>
+        )}
+
+        {conflict?.hasConflict && (
+          <div className="mb-5 space-y-2">
+            <p className="text-xs uppercase tracking-wider text-emerald-200/80 font-semibold">
+              Alternativas de resolucion
+            </p>
+
+            {nextAvailable && (
+              <button
+                type="button"
+                onClick={() => setResolutionOption('move-date')}
+                className={`w-full text-left p-3 rounded-xl border text-sm transition-colors ${
+                  resolutionOption === 'move-date'
+                    ? 'border-emerald-500 bg-emerald-500/15 text-emerald-100'
+                    : 'border-emerald-900 bg-[#01230f]/40 text-emerald-200/80 hover:border-emerald-700'
+                }`}
+              >
+                <strong>Mover subtarea</strong>
+                <div className="text-xs mt-1">
+                  Reprogramar para <strong>{nextAvailable.date}</strong> donde quedaria en{' '}
+                  <strong>{nextAvailable.totalHours}h / {dailyLimit}h</strong>.
+                </div>
+              </button>
+            )}
+
+            {canReduceHours && (
+              <button
+                type="button"
+                onClick={() => setResolutionOption('reduce-hours')}
+                className={`w-full text-left p-3 rounded-xl border text-sm transition-colors ${
+                  resolutionOption === 'reduce-hours'
+                    ? 'border-emerald-500 bg-emerald-500/15 text-emerald-100'
+                    : 'border-emerald-900 bg-[#01230f]/40 text-emerald-200/80 hover:border-emerald-700'
+                }`}
+              >
+                <strong>Reducir horas</strong>
+                <div className="text-xs mt-1">
+                  Mantener la fecha y ajustar esta subtarea a <strong>{suggestedReducedHours}h</strong>{' '}
+                  para no superar tu limite diario.
+                </div>
+              </button>
+            )}
+
+            {!nextAvailable && !canReduceHours && (
+              <div className="p-3 rounded-xl border border-red-500/40 bg-red-500/10 text-red-200 text-sm">
+                No hay alternativa automatica disponible en este momento. Cambia la fecha o las horas manualmente.
               </div>
             )}
           </div>
@@ -240,7 +371,7 @@ const RescheduleModal = ({ milestone, activityId, activities, dailyLimit, onSave
             type="button"
             onClick={onClose}
             className="flex-1 py-2.5 rounded-xl text-sm font-medium text-gray-400 hover:text-gray-200 transition-colors"
-            style={{ backgroundColor: 'rgba(15,23,42,0.5)', border: '1px solid #334155' }}
+            style={{ backgroundColor: 'rgba(0,21,7,0.55)', border: '1px solid #14532d' }}
           >
             Cancelar
           </button>
@@ -251,8 +382,8 @@ const RescheduleModal = ({ milestone, activityId, activities, dailyLimit, onSave
             aria-label="Guardar nueva fecha y horas"
             className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
             style={{
-              backgroundColor: '#2b9dee',
-              boxShadow: '0 4px 6px -4px rgba(43,157,238,0.4)',
+              backgroundColor: '#0F8F4F',
+              boxShadow: '0 4px 6px -4px rgba(15,143,79,0.45)',
             }}
           >
             {saving ? (
