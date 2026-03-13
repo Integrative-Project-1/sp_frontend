@@ -302,10 +302,13 @@ const HomePage = () => {
                 {boardView === 'grouped' ? <Rows3 size={14} /> : <LayoutGrid size={14} />}
                 {boardView === 'grouped' ? 'Columnas seguidas' : 'Vista actual'}
               </button>
-              <div className="pointer-events-none absolute -top-10 right-0 px-2 py-1 rounded-md text-[11px] whitespace-nowrap bg-[#001507] border border-emerald-800 text-emerald-100 opacity-0 group-hover:opacity-100 transition-opacity">
-                {boardView === 'grouped'
-                  ? 'Cambiar a columnas de seguido'
-                  : 'Cambiar a vista en bloques'}
+              <div className="pointer-events-none absolute -top-12 right-0 z-20 opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200">
+                <div className="relative px-2.5 py-1.5 rounded-md text-[11px] whitespace-nowrap bg-[#001507] border border-emerald-800 text-emerald-100 shadow-lg shadow-emerald-950/40">
+                  {boardView === 'grouped'
+                    ? 'Cambiar a columnas de seguido'
+                    : 'Cambiar a vista en bloques'}
+                  <div className="absolute right-4 -bottom-1.5 w-2.5 h-2.5 rotate-45 bg-[#001507] border-r border-b border-emerald-800" />
+                </div>
               </div>
             </div>
           </div>
