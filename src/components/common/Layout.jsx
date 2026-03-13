@@ -4,7 +4,7 @@ import Sidebar from './Sidebar';
 
 const Layout = () => {
   return (
-    <div className="flex min-h-screen bg-[#0b0f1a]">
+    <div className="flex min-h-screen bg-[radial-gradient(circle_at_top,_#0A753F_0%,_#06592F_28%,_#01230F_58%,_#001507_100%)]">
       {/* Sidebar fijo (Trazabilidad UX - Navegación coherente) */}
       <Sidebar />
 

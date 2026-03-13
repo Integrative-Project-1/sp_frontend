@@ -49,7 +49,7 @@ const SubtaskCard = ({
       <button
         type="button"
         onClick={() => onEditActivity?.(activity)}
-        className="shrink-0 p-1 text-gray-500 hover:text-blue-400 transition-colors"
+        className="shrink-0 p-1 text-gray-500 hover:text-emerald-300 transition-colors"
         title="Editar actividad"
       >
         <ChevronRight size={18} />

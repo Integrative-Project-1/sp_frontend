@@ -10,8 +10,13 @@ const getTodayStr = () => new Date().toISOString().slice(0, 10);
 
 const normalizeDate = (dateStr) => {
   if (!dateStr) return null;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
   const d = new Date(dateStr);
-  return isNaN(d.getTime()) ? null : d.toISOString().slice(0, 10);
+  if (isNaN(d.getTime())) return null;
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
 };
 
 const getActivityPendingSubtasks = (activity) => {

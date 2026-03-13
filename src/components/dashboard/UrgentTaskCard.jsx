@@ -38,23 +38,23 @@ const formatCountdown = (dateStr) => {
 
 const BORDER_VARIANTS = {
   vencidas: 'border-red-500',
-  paraHoy: 'border-blue-500',
-  proximas: 'border-amber-500',
-  terminadas: 'border-emerald-500',
+  paraHoy: 'border-emerald-500',
+  proximas: 'border-emerald-700',
+  terminadas: 'border-emerald-600',
 };
 
 const ICON_VARIANTS = {
   vencidas: 'bg-red-500/20 text-red-500',
-  paraHoy: 'bg-blue-500/20 text-blue-500',
-  proximas: 'bg-amber-500/20 text-amber-500',
-  terminadas: 'bg-emerald-500/20 text-emerald-500',
+  paraHoy: 'bg-emerald-500/20 text-emerald-300',
+  proximas: 'bg-emerald-700/20 text-emerald-400',
+  terminadas: 'bg-emerald-500/20 text-emerald-200',
 };
 
 const BADGE_VARIANTS = {
   vencidas: 'bg-red-500/10 text-red-400 border-red-500/20',
-  paraHoy: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-  proximas: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
-  terminadas: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+  paraHoy: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
+  proximas: 'bg-emerald-700/10 text-emerald-400 border-emerald-700/20',
+  terminadas: 'bg-emerald-500/10 text-emerald-200 border-emerald-500/20',
 };
 
 const UrgentTaskCard = ({
@@ -129,13 +129,13 @@ const UrgentTaskCard = ({
     : 0;
 
   return (
-    <div className={`bg-[#1e293b]/40 border-l-4 ${borderClass} rounded-xl overflow-hidden transition-all`}>
+    <div className={`bg-[#01230f]/45 border-l-4 ${borderClass} rounded-xl overflow-hidden transition-all`}>
       <div
         role="button"
         tabIndex={0}
         onClick={onToggleExpand}
         onKeyDown={(e) => e.key === 'Enter' && onToggleExpand()}
-        className="p-5 flex items-center justify-between group hover:bg-[#1e293b]/60 transition-all cursor-pointer"
+        className="p-5 flex items-center justify-between group hover:bg-[#0f8f4f]/15 transition-all cursor-pointer"
       >
         <div className="flex items-center gap-4">
           <div className={`p-3 rounded-full ${iconClass}`}>
@@ -153,16 +153,16 @@ const UrgentTaskCard = ({
             {variant === 'terminadas' ? `${progress}%` : (countdown ?? 'Pronto')}
           </span>
           {isExpanded ? (
-            <ChevronUp className="text-gray-400" size={20} />
+            <ChevronUp className="text-emerald-100/60" size={20} />
           ) : (
-            <ChevronDown className="text-gray-400" size={20} />
+            <ChevronDown className="text-emerald-100/60" size={20} />
           )}
         </div>
       </div>
 
       {isExpanded && (
-        <div className="border-t border-gray-800 bg-[#1e293b]/20 px-5 pb-5 pt-3">
-          <h5 className="text-xs font-medium text-blue-400 uppercase tracking-wider mb-3">
+        <div className="border-t border-emerald-950 bg-[#001507]/55 px-5 pb-5 pt-3">
+          <h5 className="text-xs font-medium text-emerald-300 uppercase tracking-wider mb-3">
             Subtareas
           </h5>
           {milestones.length > 0 ? (
@@ -170,7 +170,7 @@ const UrgentTaskCard = ({
               {milestones.map((milestone, index) => (
                 <div
                   key={index}
-                  className="flex items-center gap-3 bg-[#1e293b] border border-gray-700 rounded-xl px-4 py-3 group/milestone"
+                  className="flex items-center gap-3 bg-[#01230f]/55 border border-emerald-950 rounded-xl px-4 py-3 group/milestone"
                 >
                   <button
                     type="button"
@@ -180,7 +180,7 @@ const UrgentTaskCard = ({
                     }}
                     className={`w-5 h-5 rounded border-2 flex-shrink-0 flex items-center justify-center transition-colors ${
                       milestone.completed
-                        ? 'bg-blue-500 border-blue-500 text-white'
+                        ? 'bg-emerald-500 border-emerald-500 text-[#001507]'
                         : 'border-gray-600 hover:border-gray-500'
                     }`}
                   >
@@ -200,7 +200,7 @@ const UrgentTaskCard = ({
                         }
                       }}
                       onClick={(e) => e.stopPropagation()}
-                      className="flex-1 bg-[#0f172a] text-white rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                      className="flex-1 bg-[#001507] text-white rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                       autoFocus
                     />
                   ) : (
@@ -228,7 +228,7 @@ const UrgentTaskCard = ({
                       setRescheduleTarget(milestone);
                     }}
                     aria-label={`Reprogramar subtarea: ${milestone.text}`}
-                    className="text-gray-500 hover:text-blue-400 transition-colors p-1"
+                    className="text-gray-500 hover:text-emerald-300 transition-colors p-1"
                   >
                     <CalendarDays size={16} />
                   </button>
@@ -248,7 +248,7 @@ const UrgentTaskCard = ({
           ) : (
             <p className="text-gray-500 text-sm py-2">No hay subtareas asociadas.</p>
           )}
-          <div className="flex gap-2 mt-4 pt-3 border-t border-gray-800">
+          <div className="flex gap-2 mt-4 pt-3 border-t border-emerald-950">
             <button
               type="button"
               onClick={(e) => {
@@ -266,7 +266,7 @@ const UrgentTaskCard = ({
                 e.stopPropagation();
                 setConfirmEdit(true);
               }}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 text-sm font-medium transition-colors"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 text-sm font-medium transition-colors"
             >
               <Pencil size={14} />
               Editar actividad

@@ -39,8 +39,8 @@ const CapacityPage = () => {
   return (
     <div className="space-y-8 max-w-lg">
       <header className="flex items-center gap-3">
-        <div className="bg-blue-500/10 p-2 rounded-xl">
-          <Settings className="text-blue-400" size={24} />
+        <div className="bg-emerald-500/10 p-2 rounded-xl">
+          <Settings className="text-emerald-300" size={24} />
         </div>
         <div>
           <h1 className="text-3xl font-bold text-white">Capacidad diaria</h1>
@@ -51,7 +51,7 @@ const CapacityPage = () => {
       <div className="bg-[#1e293b] border border-gray-800 rounded-2xl p-8">
         {loadingData ? (
           <div className="flex items-center justify-center py-8">
-            <Loader2 size={28} className="text-blue-400 animate-spin" />
+            <Loader2 size={28} className="text-emerald-300 animate-spin" />
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6" noValidate>
@@ -71,7 +71,7 @@ const CapacityPage = () => {
                   setFieldError(null);
                 }}
                 disabled={saving}
-                className="w-full bg-[#0f172a] border border-gray-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                className="w-full bg-[#0f172a] border border-gray-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                 placeholder="6"
               />
               <p className="text-xs text-gray-500">Rango válido: 1 – 16 horas.</p>
@@ -87,7 +87,7 @@ const CapacityPage = () => {
               type="submit"
               disabled={saving}
               aria-busy={saving}
-              className="w-full bg-blue-500 hover:bg-blue-600 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-xl transition-colors flex items-center justify-center gap-2"
+              className="w-full bg-emerald-500 hover:bg-emerald-600 disabled:opacity-60 disabled:cursor-not-allowed text-[#001507] font-semibold py-3 px-4 rounded-xl transition-colors flex items-center justify-center gap-2"
             >
               {saving ? (
                 <>

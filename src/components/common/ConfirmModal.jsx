@@ -28,9 +28,9 @@ const ConfirmModal = ({
     },
     info: {
       icon: Pencil,
-      iconBg: 'bg-blue-500/20',
-      iconColor: 'text-blue-400',
-      confirmBg: 'bg-blue-500 hover:bg-blue-600',
+      iconBg: 'bg-emerald-500/20',
+      iconColor: 'text-emerald-300',
+      confirmBg: 'bg-emerald-500 hover:bg-emerald-600 text-[#001507]',
     },
   };
 
@@ -48,7 +48,7 @@ const ConfirmModal = ({
         role="dialog"
         aria-modal="true"
         aria-labelledby="confirm-title"
-        className="relative w-full max-w-md bg-[#1e293b] border border-gray-700 rounded-2xl shadow-2xl overflow-hidden"
+        className="relative w-full max-w-md bg-[#0A1D14] border border-emerald-900 rounded-2xl shadow-2xl overflow-hidden"
       >
         <div className="p-6">
           <div className={`w-14 h-14 rounded-2xl ${style.iconBg} flex items-center justify-center mb-4`}>
