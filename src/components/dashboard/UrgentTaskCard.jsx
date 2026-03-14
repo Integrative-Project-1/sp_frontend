@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AlertCircle, ChevronDown, ChevronUp, Check, Trash2, Pencil, CalendarDays } from 'lucide-react';
+import { AlertCircle, AlertTriangle, ChevronDown, ChevronUp, Check, Trash2, Pencil, CalendarDays } from 'lucide-react';
 import { format, parseISO, differenceInCalendarDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 import ConfirmModal from '../common/ConfirmModal';
@@ -38,22 +38,22 @@ const formatCountdown = (dateStr) => {
 
 const BORDER_VARIANTS = {
   vencidas: 'border-red-500',
-  paraHoy: 'border-emerald-500',
-  proximas: 'border-emerald-700',
+  paraHoy: 'border-blue-500',
+  proximas: 'border-amber-500',
   terminadas: 'border-emerald-600',
 };
 
 const ICON_VARIANTS = {
   vencidas: 'bg-red-500/20 text-red-500',
-  paraHoy: 'bg-emerald-500/20 text-emerald-300',
-  proximas: 'bg-emerald-700/20 text-emerald-400',
+  paraHoy: 'bg-blue-500/20 text-blue-300',
+  proximas: 'bg-amber-500/20 text-amber-300',
   terminadas: 'bg-emerald-500/20 text-emerald-200',
 };
 
 const BADGE_VARIANTS = {
   vencidas: 'bg-red-500/10 text-red-400 border-red-500/20',
-  paraHoy: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
-  proximas: 'bg-emerald-700/10 text-emerald-400 border-emerald-700/20',
+  paraHoy: 'bg-blue-500/10 text-blue-300 border-blue-500/20',
+  proximas: 'bg-amber-500/10 text-amber-300 border-amber-500/20',
   terminadas: 'bg-emerald-500/10 text-emerald-200 border-emerald-500/20',
 };
 
@@ -65,6 +65,7 @@ const UrgentTaskCard = ({
   onEditActivity,
   onDeleteActivity,
   variant = 'vencidas', // vencidas | paraHoy | proximas | terminadas
+  showEmergency = false,
 }) => {
   const { showSuccess } = useToast();
   const { activities, rescheduleSubtask } = useActivitiesContext();
@@ -149,6 +150,15 @@ const UrgentTaskCard = ({
           </div>
         </div>
         <div className="flex items-center gap-3">
+          {showEmergency && (
+            <div
+              className="p-2 rounded-full bg-red-500/20 text-red-300 border border-red-500/30"
+              role="img"
+              aria-label="Conflicto de capacidad"
+            >
+              <AlertTriangle size={16} />
+            </div>
+          )}
           <span className={`px-3 py-1 rounded-full text-xs font-bold border ${badgeClass}`}>
             {variant === 'terminadas' ? `${progress}%` : (countdown ?? 'Pronto')}
           </span>
