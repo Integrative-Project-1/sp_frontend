@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { AlertCircle, ChevronDown, ChevronUp, Check, Trash2, Pencil, CalendarDays } from 'lucide-react';
+import { AlertCircle, ChevronDown, ChevronUp, Check, Trash2, Pencil, CalendarDays, Clock } from 'lucide-react';
 import { format, parseISO, differenceInCalendarDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 import ConfirmModal from '../common/ConfirmModal';
 import RescheduleModal from '../subtask/RescheduleModal';
+import PostponeModal from '../subtask/PostponeModal';
 import { useToast } from '../../context/ToastContext';
 import { useActivitiesContext } from '../../context/ActivitiesContext';
 import { useSubtaskReschedule } from '../../hooks/useSubtaskReschedule';
@@ -57,6 +58,19 @@ const BADGE_VARIANTS = {
   terminadas: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
 };
 
+/* ── Checkbox styles by status ── */
+const checkboxClass = (status) => {
+  if (status === 'done') return 'bg-emerald-500 border-emerald-500 text-white';
+  if (status === 'postponed') return 'bg-amber-500/20 border-amber-500 text-amber-400';
+  return 'border-gray-600 hover:border-gray-500';
+};
+
+const milestoneTextClass = (status) => {
+  if (status === 'done') return 'text-gray-500 line-through';
+  if (status === 'postponed') return 'text-amber-400';
+  return 'text-white';
+};
+
 const UrgentTaskCard = ({
   activity,
   isExpanded,
@@ -64,12 +78,13 @@ const UrgentTaskCard = ({
   onUpdateActivity,
   onEditActivity,
   onDeleteActivity,
-  variant = 'vencidas', // vencidas | paraHoy | proximas | terminadas
+  variant = 'vencidas',
 }) => {
   const { showSuccess } = useToast();
-  const { activities, rescheduleSubtask } = useActivitiesContext();
+  const { activities, rescheduleSubtask, updateSubtaskStatus } = useActivitiesContext();
   const { dailyLimit } = useSubtaskReschedule();
-  const [rescheduleTarget, setRescheduleTarget] = useState(null); // milestone | null
+  const [rescheduleTarget, setRescheduleTarget] = useState(null);
+  const [postponeTarget, setPostponeTarget] = useState(null);
 
   const title = activity?.title || activity?.activityTitle;
   const course = activity?.course;
@@ -79,18 +94,20 @@ const UrgentTaskCard = ({
 
   const [editingIndex, setEditingIndex] = useState(null);
   const [editText, setEditText] = useState('');
-  const [confirmDelete, setConfirmDelete] = useState(null); // 'activity' | { type: 'milestone', index }
+  const [confirmDelete, setConfirmDelete] = useState(null);
   const [confirmEdit, setConfirmEdit] = useState(false);
 
   const handleUpdateMilestones = (newMilestones) => {
     onUpdateActivity(activity.id, { milestones: newMilestones });
   };
 
-  const handleToggleCompleted = (index) => {
-    const updated = milestones.map((m, i) =>
-      i === index ? { ...m, completed: !m.completed } : m
-    );
-    handleUpdateMilestones(updated);
+  /* Toggle done/pending via API */
+  const handleToggleCompleted = async (milestone) => {
+    const newStatus = milestone.status === 'done' ? 'pending' : 'done';
+    await updateSubtaskStatus(activity.id, milestone.id, {
+      status: newStatus,
+      note: newStatus === 'pending' ? '' : milestone.note,
+    });
   };
 
   const handleStartEdit = (index) => {
@@ -125,7 +142,7 @@ const UrgentTaskCard = ({
   const badgeClass = BADGE_VARIANTS[variant] || BADGE_VARIANTS.vencidas;
 
   const progress = milestones.length
-    ? Math.round((milestones.filter((m) => m.completed).length / milestones.length) * 100)
+    ? Math.round((milestones.filter((m) => m.status === 'done').length / milestones.length) * 100)
     : 0;
 
   return (
@@ -169,23 +186,27 @@ const UrgentTaskCard = ({
             <div className="space-y-2">
               {milestones.map((milestone, index) => (
                 <div
-                  key={index}
+                  key={milestone.id || index}
                   className="flex items-center gap-3 bg-[#1e293b] border border-gray-700 rounded-xl px-4 py-3 group/milestone"
                 >
+                  {/* Checkbox — marca done/pending */}
                   <button
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleToggleCompleted(index);
+                      handleToggleCompleted(milestone);
                     }}
-                    className={`w-5 h-5 rounded border-2 flex-shrink-0 flex items-center justify-center transition-colors ${
-                      milestone.completed
-                        ? 'bg-blue-500 border-blue-500 text-white'
-                        : 'border-gray-600 hover:border-gray-500'
-                    }`}
+                    aria-label={
+                      milestone.status === 'done'
+                        ? `Desmarcar subtarea: ${milestone.text}`
+                        : `Marcar como hecha: ${milestone.text}`
+                    }
+                    className={`w-5 h-5 rounded border-2 flex-shrink-0 flex items-center justify-center transition-colors ${checkboxClass(milestone.status)}`}
                   >
-                    {milestone.completed && <Check size={12} strokeWidth={3} />}
+                    {milestone.status === 'done' && <Check size={12} strokeWidth={3} />}
+                    {milestone.status === 'postponed' && <Clock size={11} />}
                   </button>
+
                   {editingIndex === index ? (
                     <input
                       type="text"
@@ -209,9 +230,7 @@ const UrgentTaskCard = ({
                         e.stopPropagation();
                         handleStartEdit(index);
                       }}
-                      className={`flex-1 text-sm cursor-text ${
-                        milestone.completed ? 'text-gray-500 line-through' : 'text-white'
-                      }`}
+                      className={`flex-1 text-sm cursor-text ${milestoneTextClass(milestone.status)}`}
                     >
                       {milestone.text || '(Sin título)'}
                       {milestone.targetDate && (
@@ -219,8 +238,30 @@ const UrgentTaskCard = ({
                           · {formatCountdown(milestone.targetDate)}
                         </span>
                       )}
+                      {milestone.status === 'postponed' && milestone.note && (
+                        <span className="ml-2 text-xs text-amber-600 italic">
+                          · {milestone.note}
+                        </span>
+                      )}
                     </span>
                   )}
+
+                  {/* Posponer */}
+                  {milestone.status !== 'done' && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setPostponeTarget(milestone);
+                      }}
+                      aria-label={`Posponer subtarea: ${milestone.text}`}
+                      className="text-gray-500 hover:text-amber-400 transition-colors p-1"
+                    >
+                      <Clock size={16} />
+                    </button>
+                  )}
+
+                  {/* Reprogramar */}
                   <button
                     type="button"
                     onClick={(e) => {
@@ -232,6 +273,8 @@ const UrgentTaskCard = ({
                   >
                     <CalendarDays size={16} />
                   </button>
+
+                  {/* Eliminar */}
                   <button
                     type="button"
                     onClick={(e) => {
@@ -248,6 +291,7 @@ const UrgentTaskCard = ({
           ) : (
             <p className="text-gray-500 text-sm py-2">No hay subtareas asociadas.</p>
           )}
+
           <div className="flex gap-2 mt-4 pt-3 border-t border-gray-800">
             <button
               type="button"
@@ -272,13 +316,11 @@ const UrgentTaskCard = ({
               Editar actividad
             </button>
           </div>
+
           <ConfirmModal
             open={confirmEdit}
             onClose={() => setConfirmEdit(false)}
-            onConfirm={() => {
-              onEditActivity?.(activity);
-              setConfirmEdit(false);
-            }}
+            onConfirm={() => { onEditActivity?.(activity); setConfirmEdit(false); }}
             title="Editar actividad"
             message="¿Deseas modificar los datos de esta actividad?"
             confirmLabel="Editar"
@@ -305,6 +347,7 @@ const UrgentTaskCard = ({
             confirmLabel="Eliminar"
             variant="danger"
           />
+
           {rescheduleTarget && (
             <RescheduleModal
               milestone={rescheduleTarget}
@@ -316,6 +359,20 @@ const UrgentTaskCard = ({
                 showSuccess('Subtarea reprogramada correctamente');
               }}
               onClose={() => setRescheduleTarget(null)}
+            />
+          )}
+
+          {postponeTarget && (
+            <PostponeModal
+              milestone={postponeTarget}
+              onSave={async (note) => {
+                await updateSubtaskStatus(activity.id, postponeTarget.id, {
+                  status: 'postponed',
+                  note,
+                });
+                showSuccess('Subtarea pospuesta');
+              }}
+              onClose={() => setPostponeTarget(null)}
             />
           )}
         </div>

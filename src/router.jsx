@@ -6,6 +6,7 @@ import EditActivityPage from './pages/EditActivityPage';
 import ComingSoonPage from './pages/ComingSoonPage';
 import LoginPage from './pages/LoginPage';
 import CapacityPage from './pages/CapacityPage';
+import ProgressPage from './pages/ProgressPage';
 import ProtectedRoute from './components/common/ProtectedRoute';
 
 export const router = createBrowserRouter([
@@ -26,6 +27,7 @@ export const router = createBrowserRouter([
       { path: '/crear', element: <CreateActivityPage /> },
       { path: '/editar/:id', element: <EditActivityPage /> },
       { path: '/capacidad', element: <CapacityPage /> },
+      { path: '/progreso', element: <ProgressPage /> },
       // Rutas con el mensaje de Próximamente
       { path: '/calendario', element: <ComingSoonPage title="Calendario" /> },
       { path: '/cursos', element: <ComingSoonPage title="Mis Cursos" /> },

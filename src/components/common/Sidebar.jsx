@@ -9,6 +9,7 @@ import {
   Plus,
   GraduationCap,
   LogOut,
+  BarChart2,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useActivitiesContext as useActivities } from '../../context/ActivitiesContext';
@@ -21,6 +22,7 @@ const Sidebar = () => {
 
   const menuItems = [
     { name: 'Panel Principal', icon: LayoutDashboard, path: '/' },
+    { name: 'Progreso', icon: BarChart2, path: '/progreso' },
     { name: 'Calendario', icon: Calendar, path: '/calendario' },
     { name: 'Cursos', icon: BookOpen, path: '/cursos' },
     { name: 'Evaluaciones', icon: FileCheck, path: '/evaluaciones' },
