@@ -35,11 +35,11 @@ const Sidebar = () => {
   };
 
   return (
-    <aside className="w-64 h-screen bg-[#0f172a] border-r border-gray-800 flex flex-col p-6 sticky top-0">
+    <aside className="w-64 h-screen bg-[#001507]/95 border-r border-emerald-950 flex flex-col p-6 sticky top-0 backdrop-blur-md">
       {/* Logo Section */}
       <div className="flex items-center gap-3 mb-10 px-2">
-        <div className="bg-blue-500 p-2 rounded-xl shadow-lg shadow-blue-500/30">
-          <GraduationCap className="text-white" size={24} />
+        <div className="bg-emerald-500 p-2 rounded-xl shadow-lg shadow-emerald-500/35">
+          <GraduationCap className="text-[#001507]" size={24} />
         </div>
         <span className="text-xl font-bold text-white tracking-tight">StudyPlanner</span>
       </div>
@@ -68,8 +68,8 @@ const Sidebar = () => {
               flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200
               ${
                 isActive
-                  ? 'bg-blue-600/10 text-blue-400 border border-blue-500/20'
-                  : 'text-gray-400 hover:bg-gray-800 hover:text-gray-200'
+                  ? 'bg-emerald-600/15 text-emerald-300 border border-emerald-500/30'
+                  : 'text-emerald-100/65 hover:bg-emerald-950/60 hover:text-emerald-100'
               }
             `}
           >
@@ -84,7 +84,7 @@ const Sidebar = () => {
         <button
           type="button"
           onClick={() => navigate('/crear')}
-          className="mt-6 bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-semibold shadow-lg shadow-blue-500/20 transition-all active:scale-95"
+          className="mt-6 bg-emerald-500 hover:bg-emerald-400 text-[#001507] flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-semibold shadow-lg shadow-emerald-500/20 transition-all active:scale-95"
         >
           <Plus size={20} />
           Nueva Actividad
@@ -95,7 +95,7 @@ const Sidebar = () => {
       <button
         type="button"
         onClick={handleLogout}
-        className="mt-2 flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-gray-800 hover:text-red-400 transition-all duration-200 w-full"
+        className="mt-2 flex items-center gap-3 px-4 py-3 rounded-xl text-emerald-100/65 hover:bg-emerald-950/60 hover:text-red-400 transition-all duration-200 w-full"
       >
         <LogOut size={20} />
         <span className="font-medium text-sm">Cerrar sesión</span>

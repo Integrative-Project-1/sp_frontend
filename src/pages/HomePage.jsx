@@ -11,6 +11,9 @@ import {
   RotateCcw,
   X,
   Plus,
+  KanbanSquare,
+  Rows3,
+  LayoutGrid,
 } from 'lucide-react';
 import StatCard from '../components/dashboard/StatCard';
 import UrgentTaskCard from '../components/dashboard/UrgentTaskCard';
@@ -19,14 +22,18 @@ import { useActivitiesContext as useActivities } from '../context/ActivitiesCont
 import { useToast } from '../context/ToastContext';
 import { groupAndSortActivities, SORTING_RULE_TEXT } from '../utils/activityGrouping';
 import { useFilters } from '../hooks/useFilters';
+import { useSubtaskReschedule } from '../hooks/useSubtaskReschedule';
+import { getHoursForDay } from '../utils/conflictDetection';
 
 const HomePage = () => {
   const navigate = useNavigate();
   const { showSuccess } = useToast();
   const { activities, loading, updateActivity, deleteActivity, error, retry } = useActivities();
+  const { dailyLimit } = useSubtaskReschedule();
   const [showRule, setShowRule] = useState(false);
   const [expandedId, setExpandedId] = useState(null);
   const [search, setSearch] = useState('');
+  const [boardView, setBoardView] = useState('grouped'); // grouped | continuous
 
   const {
     filtered,
@@ -50,6 +57,89 @@ const HomePage = () => {
   const { vencidas, paraHoy, proximas, terminadasHoy } = groupAndSortActivities(searchFiltered);
   const hasAnyActivities =
     vencidas.length > 0 || paraHoy.length > 0 || proximas.length > 0 || terminadasHoy.length > 0;
+
+  const todayKey = (() => {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  })();
+
+  const usedHoursToday = getHoursForDay(activities, todayKey);
+  const safeDailyLimit = Number(dailyLimit) > 0 ? Number(dailyLimit) : 1;
+  const ratio = usedHoursToday / safeDailyLimit;
+  const ratioClamped = Math.max(0, Math.min(1, ratio));
+
+  const fmtHours = (n) => {
+    const num = Number(n) || 0;
+    if (Number.isInteger(num)) return String(num);
+    return String(Math.round(num * 10) / 10);
+  };
+
+  const heatColor = (p) => {
+    const clamped = Math.max(0, Math.min(1, p));
+    const hue = Math.round((1 - clamped) * 120);
+    return `hsl(${hue} 85% 45%)`;
+  };
+
+  const latestActivityId = (() => {
+    const numericIds = activities.map((a) => Number(a.id)).filter((n) => Number.isFinite(n));
+    if (!numericIds.length) return null;
+    return String(Math.max(...numericIds));
+  })();
+
+  const latestActivity = latestActivityId
+    ? activities.find((a) => String(a.id) === String(latestActivityId))
+    : null;
+
+  const latestHasCapacityConflict =
+    latestActivity && Array.isArray(latestActivity.milestones)
+      ? latestActivity.milestones.some((m) => {
+          const date = m?.targetDate || latestActivity.eventDate;
+          if (!date) return false;
+          return getHoursForDay(activities, date) > safeDailyLimit;
+        })
+      : false;
+
+  const kanbanColumns = [
+    {
+      key: 'vencidas',
+      title: 'Vencidas',
+      icon: AlertTriangle,
+      iconClass: 'text-red-400',
+      badgeClass: 'bg-red-500/15 border-red-500/40 text-red-300',
+      cards: vencidas,
+      variant: 'vencidas',
+    },
+    {
+      key: 'paraHoy',
+      title: 'Para hoy',
+      icon: Calendar,
+      iconClass: 'text-blue-300',
+      badgeClass: 'bg-blue-500/15 border-blue-500/40 text-blue-200',
+      cards: paraHoy,
+      variant: 'paraHoy',
+    },
+    {
+      key: 'proximas',
+      title: 'Próximas',
+      icon: Timer,
+      iconClass: 'text-amber-400',
+      badgeClass: 'bg-amber-500/15 border-amber-500/40 text-amber-200',
+      cards: proximas,
+      variant: 'proximas',
+    },
+    {
+      key: 'terminadas',
+      title: 'Completadas',
+      icon: CheckCircle2,
+      iconClass: 'text-emerald-200',
+      badgeClass: 'bg-emerald-600/20 border-emerald-600/30 text-emerald-200',
+      cards: terminadasHoy,
+      variant: 'terminadas',
+    },
+  ];
 
   const handleDeleteActivity = (id) => {
     deleteActivity(id);
@@ -92,6 +182,7 @@ const HomePage = () => {
       onEditActivity={(a) => navigate(`/editar/${a.id}`)}
       onDeleteActivity={handleDeleteActivity}
       variant={variant}
+      showEmergency={latestHasCapacityConflict && String(activity.id) === String(latestActivityId)}
     />
   );
 
@@ -106,7 +197,7 @@ const HomePage = () => {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Buscar tareas, cursos o notas..."
-          className="w-full bg-[#1e293b]/50 border border-gray-800 rounded-2xl py-3 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+          className="w-full bg-[#01230f]/55 border border-emerald-950 rounded-2xl py-3 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
         />
       </div>
 
@@ -116,7 +207,7 @@ const HomePage = () => {
           aria-label="Filtrar por curso"
           value={filterCourse}
           onChange={(e) => setFilterCourse(e.target.value)}
-          className="bg-[#1e293b]/50 border border-gray-800 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+          className="bg-[#01230f]/55 border border-emerald-950 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
         >
           <option value="">Todos los cursos</option>
           {courses.map((c) => (
@@ -130,7 +221,7 @@ const HomePage = () => {
           aria-label="Filtrar por estado"
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
-          className="bg-[#1e293b]/50 border border-gray-800 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+          className="bg-[#01230f]/55 border border-emerald-950 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
         >
           <option value="">Todos los estados</option>
           <option value="pending">Pendientes</option>
@@ -150,8 +241,84 @@ const HomePage = () => {
       </div>
 
       <header>
-        <h1 className="text-3xl font-bold text-white">Prioridades de Hoy</h1>
-        <p className="text-gray-400 mt-1">Concéntrate en lo más importante hoy.</p>
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <h1 className="text-3xl font-bold text-white">Prioridades de Hoy</h1>
+            <p className="text-emerald-100/70 mt-1">Visualiza tus tareas como tablero Kanban para priorizar rapido.</p>
+          </div>
+          <div className="w-full sm:w-[360px] bg-[#01230f]/55 border border-emerald-950 rounded-2xl px-4 py-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <p className="text-xs font-semibold text-emerald-100/80">Capacidad de hoy</p>
+                <div className="relative group">
+                  <button
+                    type="button"
+                    aria-label="Ayuda: capacidad de hoy"
+                    className="text-emerald-100/60 hover:text-emerald-100 transition-colors"
+                  >
+                    <HelpCircle size={14} />
+                  </button>
+                  <div className="pointer-events-none absolute -top-3 right-0 z-30 opacity-0 -translate-y-full group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200">
+                    <div className="relative w-[260px] sm:w-[320px] max-w-[calc(100vw-2rem)] px-3 py-2 rounded-md text-[11px] leading-4 bg-[#001507] border border-emerald-800 text-emerald-100 shadow-lg shadow-emerald-950/40 whitespace-normal break-words">
+                      <div className="font-semibold text-emerald-50">¿Qué significan las barras?</div>
+                      <div className="mt-1 text-emerald-100/90">
+                        Barra 1 (arriba): cuánto de tu capacidad ya está usado hoy.
+                      </div>
+                      <div className="mt-1 text-emerald-100/90">
+                        Barra 2 (abajo): mapa de calor del “riesgo” (verde = ok, amarillo = cerca del límite, rojo = al límite o excedido). El punto marca tu nivel actual.
+                      </div>
+                      <div className="absolute right-4 -bottom-1.5 w-2.5 h-2.5 rotate-45 bg-[#001507] border-r border-b border-emerald-800" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <p className="text-xs font-semibold text-emerald-50">
+                {fmtHours(usedHoursToday)}h / {fmtHours(safeDailyLimit)}h
+              </p>
+            </div>
+
+            <div className="mt-2">
+              <div className="h-2 rounded-full bg-[#001507]/65 border border-emerald-950 overflow-hidden">
+                <div
+                  className="h-full rounded-full"
+                  style={{
+                    width: `${Math.min(100, ratioClamped * 100)}%`,
+                    backgroundColor: heatColor(ratioClamped),
+                  }}
+                />
+              </div>
+
+              <div className="mt-2 h-2 rounded-full overflow-hidden border border-emerald-950 relative">
+                <div className="absolute inset-0" style={{ background: 'linear-gradient(90deg, #22c55e 0%, #f59e0b 55%, #ef4444 100%)' }} />
+                <div
+                  className="absolute right-0 top-0 h-full bg-[#001507]/70"
+                  style={{ width: `${Math.max(0, 100 - ratioClamped * 100)}%` }}
+                />
+                <div
+                  className="absolute top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full border border-white/70"
+                  style={{
+                    left: `calc(${ratioClamped * 100}% - 3px)`,
+                    backgroundColor: heatColor(ratioClamped),
+                  }}
+                />
+              </div>
+              <div className="mt-1 flex items-center justify-between text-[10px] text-emerald-100/55">
+                <span>Ok</span>
+                <span>Cerca</span>
+                <span>Límite</span>
+              </div>
+            </div>
+
+            <div className="mt-2 flex items-center justify-between text-[11px]">
+              {usedHoursToday <= safeDailyLimit ? (
+                <span className="text-emerald-100/75">Disponible: {fmtHours(safeDailyLimit - usedHoursToday)}h</span>
+              ) : (
+                <span className="text-red-300">Excedido: +{fmtHours(usedHoursToday - safeDailyLimit)}h</span>
+              )}
+              <span className="text-emerald-100/55">Basado en subtareas programadas para hoy</span>
+            </div>
+          </div>
+        </div>
       </header>
 
       {/* Regla visible - ¿Cómo se ordena esto? */}
@@ -159,13 +326,13 @@ const HomePage = () => {
         <button
           type="button"
           onClick={() => setShowRule(!showRule)}
-          className="flex items-center gap-2 text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors"
+          className="flex items-center gap-2 text-emerald-300 hover:text-emerald-200 text-sm font-medium transition-colors"
         >
           <HelpCircle size={18} />
           ¿Cómo se ordena esto?
         </button>
         {showRule && (
-          <div className="mt-2 p-4 bg-[#1e293b] border border-blue-500/30 rounded-xl text-sm text-blue-100">
+          <div className="mt-2 p-4 bg-[#01230f]/75 border border-emerald-600/40 rounded-xl text-sm text-emerald-50">
             {SORTING_RULE_TEXT}
           </div>
         )}
@@ -186,7 +353,7 @@ const HomePage = () => {
           value={String(paraHoy.length)}
           footer="Objetivo del día"
           icon={Calendar}
-          colorClass="text-blue-400"
+          colorClass="text-blue-300"
           bgColorClass="bg-blue-500/10"
         />
         <StatCard
@@ -216,7 +383,7 @@ const HomePage = () => {
               <button
                 type="button"
                 onClick={() => { clearFilters(); setSearch(''); }}
-                className="mt-3 text-blue-400 hover:text-blue-300 text-sm transition-colors"
+                className="mt-3 text-emerald-300 hover:text-emerald-200 text-sm transition-colors"
               >
                 Limpiar filtros
               </button>
@@ -228,7 +395,7 @@ const HomePage = () => {
               <button
                 type="button"
                 onClick={() => navigate('/crear')}
-                className="mt-6 bg-blue-500 hover:bg-blue-600 text-white inline-flex items-center gap-2 py-3 px-6 rounded-xl font-semibold shadow-lg shadow-blue-500/20 transition-all active:scale-95"
+                className="mt-6 bg-emerald-500 hover:bg-emerald-600 text-[#001507] inline-flex items-center gap-2 py-3 px-6 rounded-xl font-semibold shadow-lg shadow-emerald-500/20 transition-all active:scale-95"
               >
                 <Plus size={20} />
                 Nueva Actividad
@@ -238,56 +405,79 @@ const HomePage = () => {
         </div>
       )}
 
-      {/* Grupos de ACTIVIDADES */}
+      {/* Kanban de ACTIVIDADES */}
       {hasAnyActivities && (
-        <div className="space-y-8">
-          {vencidas.length > 0 && (
-            <section className="space-y-3">
-              <h2 className="text-lg font-semibold text-red-400 flex items-center gap-2">
-                <AlertTriangle size={20} />
-                Vencidas
-              </h2>
-              <div className="space-y-2">
-                {vencidas.map((activity) => renderActivityCard(activity, 'vencidas'))}
-              </div>
-            </section>
-          )}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-2 text-emerald-200">
+              <KanbanSquare size={18} />
+              <span className="text-sm font-medium">Tablero De Actividades</span>
+            </div>
 
-          {paraHoy.length > 0 && (
-            <section className="space-y-3">
-              <h2 className="text-lg font-semibold text-blue-400 flex items-center gap-2">
-                <Calendar size={20} />
-                Para hoy
-              </h2>
-              <div className="space-y-2">
-                {paraHoy.map((activity) => renderActivityCard(activity, 'paraHoy'))}
+            <div className="relative group">
+              <button
+                type="button"
+                onClick={() =>
+                  setBoardView((prev) => (prev === 'grouped' ? 'continuous' : 'grouped'))
+                }
+                className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-emerald-800 bg-[#01230f]/60 text-emerald-200 hover:bg-[#01230f] transition-colors text-xs"
+                aria-label="Cambiar vista del tablero"
+              >
+                {boardView === 'grouped' ? <Rows3 size={14} /> : <LayoutGrid size={14} />}
+                {boardView === 'grouped' ? 'Columnas seguidas' : 'Vista actual'}
+              </button>
+              <div className="pointer-events-none absolute -top-12 right-0 z-20 opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200">
+                <div className="relative px-2.5 py-1.5 rounded-md text-[11px] whitespace-nowrap bg-[#001507] border border-emerald-800 text-emerald-100 shadow-lg shadow-emerald-950/40">
+                  {boardView === 'grouped'
+                    ? 'Cambiar a columnas de seguido'
+                    : 'Cambiar a vista en bloques'}
+                  <div className="absolute right-4 -bottom-1.5 w-2.5 h-2.5 rotate-45 bg-[#001507] border-r border-b border-emerald-800" />
+                </div>
               </div>
-            </section>
-          )}
+            </div>
+          </div>
 
-          {proximas.length > 0 && (
-            <section className="space-y-3">
-              <h2 className="text-lg font-semibold text-amber-400 flex items-center gap-2">
-                <Timer size={20} />
-                Próximas
-              </h2>
-              <div className="space-y-2">
-                {proximas.map((activity) => renderActivityCard(activity, 'proximas'))}
-              </div>
-            </section>
-          )}
+          <div className={boardView === 'continuous' ? 'overflow-x-auto pb-2' : ''}>
+            <div
+              className={
+                boardView === 'continuous'
+                  ? 'flex gap-4 min-w-max'
+                  : 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4'
+              }
+            >
+              {kanbanColumns.map((column) => {
+                const ColumnIcon = column.icon;
+                return (
+                  <section
+                    key={column.key}
+                    className={`bg-[#01230f]/45 border border-emerald-950 rounded-2xl p-3 h-fit ${
+                      boardView === 'continuous' ? 'w-[290px] shrink-0' : 'w-full'
+                    }`}
+                  >
+                    <header className="flex items-center justify-between mb-3">
+                      <h2 className={`text-sm font-semibold flex items-center gap-2 ${column.iconClass}`}>
+                        <ColumnIcon size={16} />
+                        {column.title}
+                      </h2>
+                      <span className={`text-xs font-semibold px-2 py-1 rounded-full border ${column.badgeClass}`}>
+                        {column.cards.length}
+                      </span>
+                    </header>
 
-          {terminadasHoy.length > 0 && (
-            <section className="space-y-3">
-              <h2 className="text-lg font-semibold text-emerald-400 flex items-center gap-2">
-                <CheckCircle2 size={20} />
-                Terminadas hoy
-              </h2>
-              <div className="space-y-2">
-                {terminadasHoy.map((activity) => renderActivityCard(activity, 'terminadas'))}
-              </div>
-            </section>
-          )}
+                    <div className="space-y-2 min-h-20">
+                      {column.cards.length > 0 ? (
+                        column.cards.map((activity) => renderActivityCard(activity, column.variant))
+                      ) : (
+                        <div className="px-3 py-6 text-center rounded-xl border border-dashed border-emerald-900 text-emerald-100/45 text-xs">
+                          Sin tareas en esta columna
+                        </div>
+                      )}
+                    </div>
+                  </section>
+                );
+              })}
+            </div>
+          </div>
         </div>
       )}
     </div>

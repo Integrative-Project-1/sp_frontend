@@ -4,7 +4,7 @@ import { Construction } from 'lucide-react';
 const ComingSoonPage = ({ title }) => {
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-4">
-      <div className="p-4 bg-blue-500/10 rounded-full text-blue-400">
+      <div className="p-4 bg-emerald-500/10 rounded-full text-emerald-300">
         <Construction size={48} />
       </div>
       <h1 className="text-3xl font-bold text-white">{title}</h1>

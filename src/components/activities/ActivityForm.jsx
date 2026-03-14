@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Calendar, Lightbulb, Type, GraduationCap, Clock, X, Check, Plus, Trash2, Info } from 'lucide-react';
@@ -22,7 +22,7 @@ const ActivityForm = ({ onSubmit, onCancel, initialData }) => {
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(activitySchema),
@@ -38,7 +38,7 @@ const ActivityForm = ({ onSubmit, onCancel, initialData }) => {
       : undefined,
   });
 
-  const watchedEventDate = watch('eventDate');
+  const watchedEventDate = useWatch({ control, name: 'eventDate' });
   const defaultEventDate = initialData?.eventDate || watchedEventDate || new Date().toISOString().slice(0, 10);
 
   const [milestones, setMilestones] = useState(() => {
@@ -59,7 +59,7 @@ const ActivityForm = ({ onSubmit, onCancel, initialData }) => {
       ...prev,
       { id: crypto.randomUUID(), text: '', completed: false, targetDate: date, estimatedEffort: 3 },
     ]);
-  };;
+  };
 
   const removeMilestone = (id) => {
     setMilestones((prev) => {
@@ -91,21 +91,21 @@ const ActivityForm = ({ onSubmit, onCancel, initialData }) => {
   return (
     <div className="flex w-full max-w-4xl bg-[#121826] rounded-3xl overflow-hidden shadow-2xl border border-gray-800">
       {/* Sidebar Izquierdo (Gradiente) */}
-      <div className="w-1/3 bg-gradient-to-br from-[#1e3a8a] to-[#1e293b] p-8 flex flex-col justify-between text-white relative">
+      <div className="w-1/3 bg-gradient-to-br from-[#0A753F] to-[#01230F] p-8 flex flex-col justify-between text-white relative">
         <div>
-          <div className="bg-[#3b82f6] w-12 h-12 rounded-xl flex items-center justify-center mb-6 shadow-lg">
+          <div className="bg-[#1DD779] w-12 h-12 rounded-xl flex items-center justify-center mb-6 shadow-lg text-[#001507]">
             <Calendar size={24} />
           </div>
           <h2 className="text-2xl font-bold mb-4 italic">Planifica</h2>
-          <p className="text-blue-100 text-sm leading-relaxed">
+          <p className="text-emerald-100 text-sm leading-relaxed">
             Añadir tus exámenes y proyectos con antelación te ayuda a crear un horario de estudio
             equilibrado.
           </p>
         </div>
 
-        <div className="bg-[#1e293b]/50 p-4 rounded-2xl border border-blue-400/20 flex gap-3 items-start">
+        <div className="bg-[#001507]/45 p-4 rounded-2xl border border-emerald-400/20 flex gap-3 items-start">
           <Lightbulb className="text-yellow-400 shrink-0" size={18} />
-          <p className="text-xs text-blue-100">
+          <p className="text-xs text-emerald-100">
             Tip: Desglosa los proyectos grandes en tareas más pequeñas más adelante.
           </p>
         </div>
@@ -132,18 +132,18 @@ const ActivityForm = ({ onSubmit, onCancel, initialData }) => {
         <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
           {/* Título */}
           <div className="space-y-2">
-            <label className="text-xs font-medium text-blue-400 uppercase tracking-wider">
+            <label className="text-xs font-medium text-emerald-300 uppercase tracking-wider">
               Título de la Actividad *
             </label>
             <div className="relative group">
               <Type
-                className="absolute left-4 top-3.5 text-gray-500 group-focus-within:text-blue-400 transition-colors"
+                className="absolute left-4 top-3.5 text-gray-500 group-focus-within:text-emerald-300 transition-colors"
                 size={18}
               />
               <input
                 {...register('title')}
                 placeholder="ej., Examen Parcial, Proyecto Final"
-                className="w-full bg-[#1e293b] border border-gray-700 text-white rounded-xl py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
+                className="w-full bg-[#1e293b] border border-gray-700 text-white rounded-xl py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
               />
             </div>
             {errors.title && <span className="text-red-400 text-xs">{errors.title.message}</span>}
@@ -152,12 +152,12 @@ const ActivityForm = ({ onSubmit, onCancel, initialData }) => {
           <div className="grid grid-cols-2 gap-4">
             {/* Tipo */}
             <div className="space-y-2">
-              <label className="text-xs font-medium text-blue-400 uppercase tracking-wider">
+              <label className="text-xs font-medium text-emerald-300 uppercase tracking-wider">
                 Tipo *
               </label>
               <select
                 {...register('type')}
-                className="w-full bg-[#1e293b] border border-gray-700 text-white rounded-xl py-3 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                className="w-full bg-[#1e293b] border border-gray-700 text-white rounded-xl py-3 px-4 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
               >
                 <option value="">Selecciona tipo</option>
                 <option value="examen">Examen</option>
@@ -171,12 +171,12 @@ const ActivityForm = ({ onSubmit, onCancel, initialData }) => {
 
             {/* Curso */}
             <div className="space-y-2">
-              <label className="text-xs font-medium text-blue-400 uppercase tracking-wider">
+              <label className="text-xs font-medium text-emerald-300 uppercase tracking-wider">
                 Curso *
               </label>
               <div className="relative group">
                 <GraduationCap
-                  className="absolute left-4 top-3.5 text-gray-500 group-focus-within:text-blue-400"
+                  className="absolute left-4 top-3.5 text-gray-500 group-focus-within:text-emerald-300"
                   size={18}
                 />
                 <input
@@ -194,7 +194,7 @@ const ActivityForm = ({ onSubmit, onCancel, initialData }) => {
           <div className="grid grid-cols-2 gap-4">
             {/* Fecha Evento */}
             <div className="space-y-2">
-              <label className="text-xs font-medium text-blue-400 uppercase tracking-wider">
+              <label className="text-xs font-medium text-emerald-300 uppercase tracking-wider">
                 Fecha del Evento *
               </label>
               <input
@@ -209,7 +209,7 @@ const ActivityForm = ({ onSubmit, onCancel, initialData }) => {
 
             {/* Hora */}
             <div className="space-y-2">
-              <label className="text-xs font-medium text-blue-400 uppercase tracking-wider">
+              <label className="text-xs font-medium text-emerald-300 uppercase tracking-wider">
                 Hora de Inicio
               </label>
               <div className="relative">
@@ -226,13 +226,13 @@ const ActivityForm = ({ onSubmit, onCancel, initialData }) => {
           {/* Milestones & Subtasks */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-medium text-blue-400 uppercase tracking-wider">
+              <label className="text-xs font-medium text-emerald-300 uppercase tracking-wider">
                 Hitos y Subtareas
               </label>
               <button
                 type="button"
                 onClick={addMilestone}
-                className="flex items-center gap-1.5 text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors"
+                className="flex items-center gap-1.5 text-emerald-300 hover:text-emerald-200 text-sm font-medium transition-colors"
               >
                 <Plus size={16} />
                 Añadir
@@ -255,12 +255,12 @@ const ActivityForm = ({ onSubmit, onCancel, initialData }) => {
                     type="date"
                     value={milestone.targetDate || ''}
                     onChange={(e) => updateMilestone(milestone.id, 'targetDate', e.target.value)}
-                    className="bg-[#0f172a] border border-gray-600 text-white rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500/50"
+                    className="bg-[#0f172a] border border-gray-600 text-white rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
                   />
                   <select
                     value={milestone.estimatedEffort ?? 3}
                     onChange={(e) => updateMilestone(milestone.id, 'estimatedEffort', Number(e.target.value))}
-                    className="bg-[#0f172a] border border-gray-600 text-white rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500/50"
+                    className="bg-[#0f172a] border border-gray-600 text-white rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
                     title="Esfuerzo estimado (1=mínimo, 5=máximo)"
                   >
                     {[1, 2, 3, 4, 5].map((n) => (
@@ -279,9 +279,9 @@ const ActivityForm = ({ onSubmit, onCancel, initialData }) => {
                 </div>
               ))}
             </div>
-            <div className="flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 rounded-xl px-4 py-3">
-              <Info className="text-blue-400 shrink-0" size={18} />
-              <p className="text-xs text-blue-200">
+            <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-4 py-3">
+              <Info className="text-emerald-300 shrink-0" size={18} />
+              <p className="text-xs text-emerald-100">
                 Las actividades programadas en las próximas 48 horas se marcarán como &quot;Alta prioridad&quot; en tu panel automáticamente.
               </p>
             </div>
@@ -299,7 +299,7 @@ const ActivityForm = ({ onSubmit, onCancel, initialData }) => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="bg-[#3b82f6] hover:bg-blue-600 text-white px-8 py-2.5 rounded-xl font-medium flex items-center gap-2 shadow-lg shadow-blue-500/20 transition-all disabled:opacity-50"
+              className="bg-emerald-500 hover:bg-emerald-600 text-[#001507] px-8 py-2.5 rounded-xl font-medium flex items-center gap-2 shadow-lg shadow-emerald-500/20 transition-all disabled:opacity-50"
             >
               <Check size={18} />
               {isSubmitting ? (isEdit ? 'Guardando...' : 'Creando...') : isEdit ? 'Guardar Cambios' : 'Crear Actividad'}

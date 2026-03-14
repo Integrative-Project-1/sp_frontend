@@ -7,10 +7,32 @@
  * @returns {number} Total de horas planificadas para ese día
  */
 export const getHoursForDay = (activities, targetDate, excludeSubtaskId = null) => {
+  const normalizedTarget = /^\d{4}-\d{2}-\d{2}$/.test(targetDate)
+    ? targetDate
+    : (() => {
+        const d = new Date(targetDate);
+        if (isNaN(d.getTime())) return targetDate;
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
+      })();
+
   let total = 0;
   for (const activity of activities) {
     for (const m of activity.milestones || []) {
-      if (m.targetDate === targetDate && m.id !== excludeSubtaskId) {
+      const normalizedMilestoneDate = /^\d{4}-\d{2}-\d{2}$/.test(m.targetDate)
+        ? m.targetDate
+        : (() => {
+            const d = new Date(m.targetDate);
+            if (isNaN(d.getTime())) return null;
+            const y = d.getFullYear();
+            const mo = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${y}-${mo}-${day}`;
+          })();
+
+      if (normalizedMilestoneDate === normalizedTarget && m.id !== excludeSubtaskId) {
         total += Number(m.estimatedEffort) || 0;
       }
     }
