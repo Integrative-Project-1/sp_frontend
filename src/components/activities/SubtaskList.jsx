@@ -1,16 +1,36 @@
 import { useState } from 'react';
-import { Box, Typography, Paper, IconButton, Chip, Stack } from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
-import ScheduleIcon from '@mui/icons-material/Schedule';
+import {
+  CheckCircle2,
+  Circle,
+  Clock,
+  CalendarDays,
+  Pencil,
+  Trash2,
+} from 'lucide-react';
 import PostponeModal from '../subtask/PostponeModal';
 
-const STATUS_COLOR = {
-  pending: 'default',
-  done: 'success',
-  postponed: 'warning',
+const STATUS_STYLES = {
+  done: {
+    badge: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
+    text: 'text-gray-500 line-through',
+    label: 'Hecha',
+  },
+  postponed: {
+    badge: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
+    text: 'text-amber-300',
+    label: 'Pospuesta',
+  },
+  pending: {
+    badge: 'bg-gray-500/15 text-gray-400 border-gray-500/30',
+    text: 'text-gray-200',
+    label: 'Pendiente',
+  },
+};
+
+const StatusIcon = ({ status }) => {
+  if (status === 'done') return <CheckCircle2 size={16} className="text-emerald-400 flex-shrink-0" />;
+  if (status === 'postponed') return <Clock size={16} className="text-amber-400 flex-shrink-0" />;
+  return <Circle size={16} className="text-gray-500 flex-shrink-0" />;
 };
 
 export default function SubtaskList({ subtasks, onEdit, onDelete, onStatusChange }) {
@@ -18,81 +38,96 @@ export default function SubtaskList({ subtasks, onEdit, onDelete, onStatusChange
 
   if (subtasks.length === 0) {
     return (
-      <Typography color="text.secondary">
+      <p className="text-gray-500 text-sm py-4">
         Sin subtareas aún. Agrega la primera con el botón de abajo.
-      </Typography>
+      </p>
     );
   }
 
   const handleToggleDone = (subtask) => {
     const newStatus = subtask.status === 'done' ? 'pending' : 'done';
-    onStatusChange?.(subtask, { status: newStatus, note: newStatus === 'pending' ? '' : subtask.note });
+    onStatusChange?.(subtask, {
+      status: newStatus,
+      note: newStatus === 'pending' ? '' : subtask.note,
+    });
   };
+
+  const styles = (status) => STATUS_STYLES[status] || STATUS_STYLES.pending;
 
   return (
     <>
-      <Stack spacing={1}>
-        {subtasks.map((subtask) => (
-          <Paper key={subtask.id} variant="outlined" sx={{ p: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <IconButton
-                size="small"
+      <ul className="space-y-2">
+        {subtasks.map((subtask) => {
+          const s = styles(subtask.status);
+          return (
+            <li
+              key={subtask.id}
+              className="flex items-start gap-3 rounded-xl px-4 py-3"
+              style={{ backgroundColor: '#1e293b', border: '1px solid #334155' }}
+            >
+              {/* Toggle done/pending */}
+              <button
+                type="button"
                 onClick={() => handleToggleDone(subtask)}
-                aria-label={subtask.status === 'done' ? `Desmarcar: ${subtask.name}` : `Marcar como hecha: ${subtask.name}`}
-                color={subtask.status === 'done' ? 'success' : 'default'}
-              >
-                {subtask.status === 'done'
-                  ? <CheckCircleOutlineIcon fontSize="small" />
-                  : <RadioButtonUncheckedIcon fontSize="small" />
+                aria-label={
+                  subtask.status === 'done'
+                    ? `Desmarcar como hecha: ${subtask.name}`
+                    : `Marcar como hecha: ${subtask.name}`
                 }
-              </IconButton>
+                className="mt-0.5 flex-shrink-0 hover:scale-110 transition-transform"
+              >
+                <StatusIcon status={subtask.status} />
+              </button>
 
-              <Box sx={{ flex: 1 }}>
-                <Typography
-                  fontWeight={500}
-                  sx={{
-                    textDecoration: subtask.status === 'done' ? 'line-through' : 'none',
-                    color: subtask.status === 'done' ? 'text.disabled' : 'inherit',
-                  }}
-                >
-                  {subtask.name}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Fecha: {subtask.target_date} · {parseFloat(subtask.estimated_hours)}h estimadas
-                </Typography>
+              {/* Info */}
+              <div className="flex-1 min-w-0">
+                <p className={`text-sm font-medium ${s.text}`}>{subtask.name}</p>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  {subtask.target_date} · {parseFloat(subtask.estimated_hours)}h estimadas
+                </p>
                 {subtask.status === 'postponed' && subtask.note && (
-                  <Typography variant="body2" color="warning.main" sx={{ fontStyle: 'italic' }}>
-                    Nota: {subtask.note}
-                  </Typography>
+                  <p className="text-xs text-amber-500 italic mt-0.5">Nota: {subtask.note}</p>
                 )}
-              </Box>
+              </div>
 
-              <Chip
-                label={subtask.status_display}
-                size="small"
-                color={STATUS_COLOR[subtask.status] || 'default'}
-              />
+              {/* Status badge */}
+              <span className={`text-xs font-medium px-2 py-0.5 rounded-full border flex-shrink-0 ${s.badge}`}>
+                {subtask.status_display || s.label}
+              </span>
 
-              {subtask.status !== 'done' && (
-                <IconButton
-                  size="small"
-                  onClick={() => setPostponeTarget(subtask)}
-                  aria-label={`Posponer: ${subtask.name}`}
+              {/* Actions */}
+              <div className="flex items-center gap-1 flex-shrink-0">
+                {subtask.status !== 'done' && (
+                  <button
+                    type="button"
+                    onClick={() => setPostponeTarget(subtask)}
+                    aria-label={`Posponer: ${subtask.name}`}
+                    className="p-1.5 rounded-lg text-gray-500 hover:text-amber-400 hover:bg-amber-500/10 transition-colors"
+                  >
+                    <Clock size={15} />
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => onEdit(subtask)}
+                  aria-label={`Editar: ${subtask.name}`}
+                  className="p-1.5 rounded-lg text-gray-500 hover:text-blue-400 hover:bg-blue-500/10 transition-colors"
                 >
-                  <ScheduleIcon fontSize="small" />
-                </IconButton>
-              )}
-
-              <IconButton size="small" onClick={() => onEdit(subtask)} aria-label="Editar subtarea">
-                <EditIcon fontSize="small" />
-              </IconButton>
-              <IconButton size="small" onClick={() => onDelete(subtask)} aria-label="Eliminar subtarea">
-                <DeleteIcon fontSize="small" />
-              </IconButton>
-            </Box>
-          </Paper>
-        ))}
-      </Stack>
+                  <Pencil size={15} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onDelete(subtask)}
+                  aria-label={`Eliminar: ${subtask.name}`}
+                  className="p-1.5 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                >
+                  <Trash2 size={15} />
+                </button>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
 
       {postponeTarget && (
         <PostponeModal
