@@ -16,7 +16,7 @@ import ActivityForm from '../components/activities/ActivityForm';
 import SubtaskList from '../components/activities/SubtaskList';
 import SubtaskForm from '../components/activities/SubtaskForm';
 import ConfirmDialog from '../components/common/ConfirmDialog';
-import { getActivity, deleteActivity, deleteSubtask } from '../services/activitiesService';
+import { getActivity, deleteActivity, deleteSubtask, updateSubtask } from '../services/activitiesService';
 
 const ACTIVITY_TYPE_COLOR = {
   exam: 'error',
@@ -63,6 +63,11 @@ export default function ActivityDetailPage() {
     setSubtaskFormOpen(false);
     setEditingSubtask(null);
     loadActivity();
+  };
+
+  const handleSubtaskStatusChange = async (subtask, { status, note }) => {
+    await updateSubtask(id, subtask.id, { status, note });
+    await loadActivity();
   };
 
   const handleDeleteConfirm = async () => {
@@ -154,6 +159,7 @@ export default function ActivityDetailPage() {
         activityId={id}
         onEdit={(st) => { setEditingSubtask(st); setSubtaskFormOpen(true); }}
         onDelete={(st) => setDeleteTarget({ type: 'subtask', id: st.id, name: st.name })}
+        onStatusChange={handleSubtaskStatusChange}
       />
 
       <Box sx={{ mt: 2 }}>
