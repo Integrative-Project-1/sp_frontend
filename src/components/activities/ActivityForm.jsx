@@ -114,7 +114,9 @@ const ActivityForm = ({ onSubmit, onCancel, initialData }) => {
       {/* Formulario Derecho */}
       <div className="w-2/3 p-10 relative">
         <button
+          type="button"
           onClick={onCancel}
+          aria-label="Cerrar formulario"
           className="absolute top-6 right-6 text-gray-400 hover:text-white transition-colors"
         >
           <X size={20} />
@@ -132,7 +134,7 @@ const ActivityForm = ({ onSubmit, onCancel, initialData }) => {
         <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
           {/* Título */}
           <div className="space-y-2">
-            <label className="text-xs font-medium text-emerald-300 uppercase tracking-wider">
+            <label htmlFor="activity-title" className="text-xs font-medium text-emerald-300 uppercase tracking-wider">
               Título de la Actividad *
             </label>
             <div className="relative group">
@@ -141,21 +143,23 @@ const ActivityForm = ({ onSubmit, onCancel, initialData }) => {
                 size={18}
               />
               <input
+                id="activity-title"
                 {...register('title')}
                 placeholder="ej., Examen Parcial, Proyecto Final"
                 className="w-full bg-[#1e293b] border border-gray-700 text-white rounded-xl py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
               />
             </div>
-            {errors.title && <span className="text-red-400 text-xs">{errors.title.message}</span>}
+            {errors.title && <span className="text-red-400 text-xs" role="alert">{errors.title.message}</span>}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             {/* Tipo */}
             <div className="space-y-2">
-              <label className="text-xs font-medium text-emerald-300 uppercase tracking-wider">
+              <label htmlFor="activity-type" className="text-xs font-medium text-emerald-300 uppercase tracking-wider">
                 Tipo *
               </label>
               <select
+                id="activity-type"
                 {...register('type')}
                 className="w-full bg-[#1e293b] border border-gray-700 text-white rounded-xl py-3 px-4 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
               >
@@ -166,12 +170,12 @@ const ActivityForm = ({ onSubmit, onCancel, initialData }) => {
                 <option value="proyecto">Proyecto</option>
                 <option value="otro">Otro</option>
               </select>
-              {errors.type && <span className="text-red-400 text-xs">{errors.type.message}</span>}
+              {errors.type && <span className="text-red-400 text-xs" role="alert">{errors.type.message}</span>}
             </div>
 
             {/* Curso */}
             <div className="space-y-2">
-              <label className="text-xs font-medium text-emerald-300 uppercase tracking-wider">
+              <label htmlFor="activity-course" className="text-xs font-medium text-emerald-300 uppercase tracking-wider">
                 Curso *
               </label>
               <div className="relative group">
@@ -180,13 +184,14 @@ const ActivityForm = ({ onSubmit, onCancel, initialData }) => {
                   size={18}
                 />
                 <input
+                  id="activity-course"
                   {...register('course')}
                   placeholder="ej., Programación I"
-                  className="w-full bg-[#1e293b] border border-gray-700 text-white rounded-xl py-3 pl-12 pr-4 focus:outline-none"
+                  className="w-full bg-[#1e293b] border border-gray-700 text-white rounded-xl py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                 />
               </div>
               {errors.course && (
-                <span className="text-red-400 text-xs">{errors.course.message}</span>
+                <span className="text-red-400 text-xs" role="alert">{errors.course.message}</span>
               )}
             </div>
           </div>
@@ -194,30 +199,32 @@ const ActivityForm = ({ onSubmit, onCancel, initialData }) => {
           <div className="grid grid-cols-2 gap-4">
             {/* Fecha Evento */}
             <div className="space-y-2">
-              <label className="text-xs font-medium text-emerald-300 uppercase tracking-wider">
+              <label htmlFor="activity-event-date" className="text-xs font-medium text-emerald-300 uppercase tracking-wider">
                 Fecha del Evento *
               </label>
               <input
+                id="activity-event-date"
                 type="date"
                 {...register('eventDate')}
-                className="w-full bg-[#1e293b] border border-gray-700 text-white rounded-xl py-3 px-4 focus:outline-none"
+                className="w-full bg-[#1e293b] border border-gray-700 text-white rounded-xl py-3 px-4 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
               />
               {errors.eventDate && (
-                <span className="text-red-400 text-xs">{errors.eventDate.message}</span>
+                <span className="text-red-400 text-xs" role="alert">{errors.eventDate.message}</span>
               )}
             </div>
 
             {/* Hora */}
             <div className="space-y-2">
-              <label className="text-xs font-medium text-emerald-300 uppercase tracking-wider">
+              <label htmlFor="activity-start-time" className="text-xs font-medium text-emerald-300 uppercase tracking-wider">
                 Hora de Inicio
               </label>
               <div className="relative">
                 <Clock className="absolute left-4 top-3.5 text-gray-500" size={18} />
                 <input
+                  id="activity-start-time"
                   type="time"
                   {...register('startTime')}
-                  className="w-full bg-[#1e293b] border border-gray-700 text-white rounded-xl py-3 pl-12 pr-4 focus:outline-none"
+                  className="w-full bg-[#1e293b] border border-gray-700 text-white rounded-xl py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                 />
               </div>
             </div>
@@ -239,29 +246,31 @@ const ActivityForm = ({ onSubmit, onCancel, initialData }) => {
               </button>
             </div>
             <div className="space-y-2">
-              {milestones.map((milestone) => (
+              {milestones.map((milestone, index) => (
                 <div
                   key={milestone.id}
                   className="flex flex-wrap items-center gap-2 sm:gap-3 bg-[#1e293b] border border-gray-700 rounded-xl px-4 py-3 group"
                 >
                   <input
                     type="text"
+                    aria-label={`Nombre de subtarea ${index + 1}`}
                     value={milestone.text}
                     onChange={(e) => updateMilestone(milestone.id, 'text', e.target.value)}
                     placeholder="Añadir un hito..."
-                    className="flex-1 min-w-[120px] bg-transparent text-white placeholder-gray-500 focus:outline-none text-sm"
+                    className="flex-1 min-w-[120px] bg-transparent text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 rounded text-sm"
                   />
                   <input
                     type="date"
+                    aria-label={`Fecha objetivo de subtarea ${index + 1}`}
                     value={milestone.targetDate || ''}
                     onChange={(e) => updateMilestone(milestone.id, 'targetDate', e.target.value)}
                     className="bg-[#0f172a] border border-gray-600 text-white rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
                   />
                   <select
+                    aria-label={`Esfuerzo estimado de subtarea ${index + 1}`}
                     value={milestone.estimatedEffort ?? 3}
                     onChange={(e) => updateMilestone(milestone.id, 'estimatedEffort', Number(e.target.value))}
                     className="bg-[#0f172a] border border-gray-600 text-white rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
-                    title="Esfuerzo estimado (1=mínimo, 5=máximo)"
                   >
                     {[1, 2, 3, 4, 5].map((n) => (
                       <option key={n} value={n}>
@@ -271,6 +280,7 @@ const ActivityForm = ({ onSubmit, onCancel, initialData }) => {
                   </select>
                   <button
                     type="button"
+                    aria-label={`Eliminar subtarea ${index + 1}`}
                     onClick={() => removeMilestone(milestone.id)}
                     className="text-gray-500 hover:text-red-400 transition-colors p-1 opacity-0 group-hover:opacity-100"
                   >
