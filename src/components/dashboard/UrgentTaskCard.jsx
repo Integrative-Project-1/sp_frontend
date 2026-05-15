@@ -103,6 +103,8 @@ const UrgentTaskCard = ({
   const deadline = activity?.eventDate;
   const countdown = formatCountdown(deadline);
   const milestones = activity?.milestones || [];
+  const activeMilestones = milestones.filter((m) => m.status !== 'postponed');
+  const postponedMilestones = milestones.filter((m) => m.status === 'postponed');
 
   const [editingIndex, setEditingIndex] = useState(null);
   const [editText, setEditText] = useState('');
@@ -116,6 +118,7 @@ const UrgentTaskCard = ({
 
   /* Toggle done/pending via API */
   const handleToggleCompleted = async (milestone) => {
+    if (milestone.status === 'done') return;
     // open confirmation modal instead of toggling immediately
     setConfirmComplete({ milestone });
   };
@@ -173,10 +176,10 @@ const UrgentTaskCard = ({
 
   return (
     <div
-      className={`relative bg-[#1e293b]/40 border-l-4 ${borderClass} rounded-xl overflow-hidden transition-all`}
+      className={`relative group bg-[#1e293b]/40 border-l-4 ${borderClass} rounded-xl overflow-hidden transition-all`}
     >
       {showEmergency && (
-        <div className="absolute -top-3 -right-3 z-20 group">
+        <div className="absolute -top-3 -right-3 z-20">
           <div className="bg-red-600 text-white rounded-full p-2 border-2 border-red-700 shadow-lg">
             <AlertTriangle size={18} />
           </div>
@@ -225,138 +228,205 @@ const UrgentTaskCard = ({
           <h5 className="text-xs font-medium text-blue-400 uppercase tracking-wider mb-3">
             Subtareas
           </h5>
-          {milestones.length > 0 ? (
-            <div className="space-y-2">
-              {milestones
-                .filter((m) => m.status !== 'done')
-                .map((milestone, index) => (
-                  <div
-                    key={milestone.id || index}
-                    className="flex items-center gap-3 bg-[#1e293b] border border-gray-700 rounded-xl px-4 py-3 group/milestone"
-                  >
-                    {/* Checkbox — marca done/pending */}
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleToggleCompleted(milestone);
-                      }}
-                      aria-label={
-                        milestone.status === 'done'
-                          ? `Desmarcar subtarea: ${milestone.text}`
-                          : `Marcar como hecha: ${milestone.text}`
-                      }
-                      className={`w-5 h-5 rounded border-2 shrink-0 flex items-center justify-center transition-colors ${checkboxClass(milestone.status)}`}
-                    >
-                      {milestone.status === 'done' && <Check size={12} strokeWidth={3} />}
-                      {milestone.status === 'postponed' && <Clock size={11} />}
-                    </button>
-
-                    {editingIndex === index ? (
-                      <input
-                        type="text"
-                        value={editText}
-                        onChange={(e) => setEditText(e.target.value)}
-                        onBlur={handleSaveEdit}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') handleSaveEdit();
-                          if (e.key === 'Escape') {
-                            setEditingIndex(null);
-                            setEditText('');
-                          }
-                        }}
-                        onClick={(e) => e.stopPropagation()}
-                        className="flex-1 bg-[#0f172a] text-white rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                        autoFocus
-                      />
-                    ) : (
-                      <span
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleStartEdit(index);
-                        }}
-                        className={`flex-1 text-sm cursor-text ${milestoneTextClass(milestone.status)}`}
+          {activeMilestones.length > 0 || postponedMilestones.length > 0 ? (
+            <div className="space-y-4">
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h6 className="text-xs font-semibold uppercase tracking-wider text-blue-400">
+                    Subtareas
+                  </h6>
+                  <span className="text-xs text-gray-400">
+                    {activeMilestones.length} pendiente(s)
+                  </span>
+                </div>
+                <div className="space-y-2">
+                  {activeMilestones.length > 0 ? (
+                    activeMilestones.map((milestone, index) => (
+                      <div
+                        key={milestone.id || index}
+                        className="flex items-center gap-3 bg-[#1e293b] border border-gray-700 rounded-xl px-4 py-3 group/milestone"
                       >
-                        {milestone.text || '(Sin título)'}
-                        {milestone.targetDate && (
-                          <span className="ml-2 text-xs text-gray-500">
-                            · {formatCountdown(milestone.targetDate)}
-                          </span>
-                        )}
-                        {milestone.note && (
-                          <span className="ml-2 text-xs text-amber-600 italic">
-                            · {milestone.note}
-                          </span>
-                        )}
-                      </span>
-                    )}
-
-                    {/* Posponer */}
-                    {milestone.status !== 'done' && (
-                      <div className="relative group">
+                        {/* Checkbox — marca done/pending */}
                         <button
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-                            setPostponeTarget(milestone);
+                            handleToggleCompleted(milestone);
                           }}
-                          aria-label={`Posponer subtarea: ${milestone.text}`}
-                          className="text-gray-500 hover:text-amber-400 transition-colors p-1"
+                          aria-label={
+                            milestone.status === 'done'
+                              ? `Desmarcar subtarea: ${milestone.text}`
+                              : `Marcar como hecha: ${milestone.text}`
+                          }
+                          className={`w-5 h-5 rounded border-2 shrink-0 flex items-center justify-center transition-colors ${checkboxClass(milestone.status)}`}
                         >
-                          <Clock size={16} />
+                          {milestone.status === 'done' && <Check size={12} strokeWidth={3} />}
+                          {milestone.status === 'postponed' && <Clock size={11} />}
                         </button>
-                        <div className="pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 z-20 opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200">
-                          <div className="relative px-2.5 py-1.5 rounded-md text-[11px] whitespace-nowrap bg-[#001507] border border-emerald-800 text-emerald-100 shadow-lg shadow-emerald-950/40">
-                            Posponer
-                            <div className="absolute right-4 -bottom-1.5 w-2.5 h-2.5 rotate-45 bg-[#001507] border-r border-b border-emerald-800" />
+
+                        {editingIndex === index ? (
+                          <input
+                            type="text"
+                            value={editText}
+                            onChange={(e) => setEditText(e.target.value)}
+                            onBlur={handleSaveEdit}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') handleSaveEdit();
+                              if (e.key === 'Escape') {
+                                setEditingIndex(null);
+                                setEditText('');
+                              }
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                            className="flex-1 bg-[#0f172a] text-white rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                            autoFocus
+                          />
+                        ) : (
+                          <span
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleStartEdit(index);
+                            }}
+                            className={`flex-1 text-sm cursor-text ${milestoneTextClass(milestone.status)}`}
+                          >
+                            {milestone.text || '(Sin título)'}
+                            {milestone.targetDate && (
+                              <span className="ml-2 text-xs text-gray-500">
+                                · {formatCountdown(milestone.targetDate)}
+                              </span>
+                            )}
+                            {milestone.note && (
+                              <span className="ml-2 text-xs text-amber-600 italic">
+                                · {milestone.note}
+                              </span>
+                            )}
+                          </span>
+                        )}
+
+                        {/* Posponer */}
+                        {milestone.status !== 'done' && (
+                          <div className="relative group">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setPostponeTarget(milestone);
+                              }}
+                              aria-label={`Posponer subtarea: ${milestone.text}`}
+                              className="text-gray-500 hover:text-amber-400 transition-colors p-1"
+                            >
+                              <Clock size={16} />
+                            </button>
+                            <div className="pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 z-20 opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200">
+                              <div className="relative px-2.5 py-1.5 rounded-md text-[11px] whitespace-nowrap bg-[#001507] border border-emerald-800 text-emerald-100 shadow-lg shadow-emerald-950/40">
+                                Posponer
+                                <div className="absolute right-4 -bottom-1.5 w-2.5 h-2.5 rotate-45 bg-[#001507] border-r border-b border-emerald-800" />
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Reprogramar */}
+                        <div className="relative group">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setRescheduleTarget(milestone);
+                            }}
+                            aria-label={`Reprogramar subtarea: ${milestone.text}`}
+                            className="text-gray-500 hover:text-blue-400 transition-colors p-1"
+                          >
+                            <CalendarDays size={16} />
+                          </button>
+                          <div className="pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 z-20 opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200">
+                            <div className="relative px-2.5 py-1.5 rounded-md text-[11px] whitespace-nowrap bg-[#001507] border border-emerald-800 text-emerald-100 shadow-lg shadow-emerald-950/40">
+                              Reprogramar
+                              <div className="absolute right-4 -bottom-1.5 w-2.5 h-2.5 rotate-45 bg-[#001507] border-r border-b border-emerald-800" />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Eliminar */}
+                        <div className="relative group">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setConfirmDelete({ type: 'milestone', index });
+                            }}
+                            aria-label={`Eliminar subtarea: ${milestone.text}`}
+                            className="text-gray-500 hover:text-red-400 transition-colors p-1"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                          <div className="pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 z-20 opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200">
+                            <div className="relative px-2.5 py-1.5 rounded-md text-[11px] whitespace-nowrap bg-[#001507] border border-emerald-800 text-emerald-100 shadow-lg shadow-emerald-950/40">
+                              Eliminar subtarea
+                              <div className="absolute right-4 -bottom-1.5 w-2.5 h-2.5 rotate-45 bg-[#001507] border-r border-b border-emerald-800" />
+                            </div>
                           </div>
                         </div>
                       </div>
-                    )}
-
-                    {/* Reprogramar */}
-                    <div className="relative group">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setRescheduleTarget(milestone);
-                        }}
-                        aria-label={`Reprogramar subtarea: ${milestone.text}`}
-                        className="text-gray-500 hover:text-blue-400 transition-colors p-1"
-                      >
-                        <CalendarDays size={16} />
-                      </button>
-                      <div className="pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 z-20 opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200">
-                        <div className="relative px-2.5 py-1.5 rounded-md text-[11px] whitespace-nowrap bg-[#001507] border border-emerald-800 text-emerald-100 shadow-lg shadow-emerald-950/40">
-                          Reprogramar
-                          <div className="absolute right-4 -bottom-1.5 w-2.5 h-2.5 rotate-45 bg-[#001507] border-r border-b border-emerald-800" />
-                        </div>
-                      </div>
+                    ))
+                  ) : (
+                    <div className="px-4 py-3 rounded-xl border border-dashed border-gray-700 text-gray-500 text-sm">
+                      No hay subtareas por hacer.
                     </div>
-
-                    {/* Eliminar */}
-                    <div className="relative group">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setConfirmDelete({ type: 'milestone', index });
-                        }}
-                        aria-label={`Eliminar subtarea: ${milestone.text}`}
-                        className="text-gray-500 hover:text-red-400 transition-colors p-1"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                      <div className="pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 z-20 opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200">
-                        <div className="relative px-2.5 py-1.5 rounded-md text-[11px] whitespace-nowrap bg-[#001507] border border-emerald-800 text-emerald-100 shadow-lg shadow-emerald-950/40">
-                          Eliminar subtarea
-                          <div className="absolute right-4 -bottom-1.5 w-2.5 h-2.5 rotate-45 bg-[#001507] border-r border-b border-emerald-800" />
-                        </div>
-                      </div>
-                    </div>
+                  )}
+                </div>
+              </div>
+              {postponedMilestones.length > 0 && (
+                <div className="pt-4 border-t border-gray-800">
+                  <div className="flex items-center justify-between mb-3">
+                    <h6 className="text-xs font-semibold uppercase tracking-wider text-amber-300">
+                      Subtareas pospuestas
+                    </h6>
+                    <span className="text-xs text-gray-400">
+                      {postponedMilestones.length} pospuesta(s)
+                    </span>
                   </div>
-                ))}
+                  <div className="space-y-2">
+                    {postponedMilestones.map((milestone, index) => (
+                      <div
+                        key={milestone.id || index}
+                        className="flex items-center gap-3 bg-[#111827] border border-gray-700 rounded-xl px-4 py-3 group/milestone"
+                      >
+                        <div className="w-5 h-5 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-300">
+                          <Clock size={12} />
+                        </div>
+                        <div className="flex-1 text-sm text-gray-300">
+                          {milestone.text || '(Sin título)'}
+                          {milestone.targetDate && (
+                            <span className="ml-2 text-xs text-gray-500">
+                              · {formatCountdown(milestone.targetDate)}
+                            </span>
+                          )}
+                        </div>
+                        <div className="relative group">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setRescheduleTarget(milestone);
+                            }}
+                            aria-label={`Reprogramar subtarea pospuesta: ${milestone.text}`}
+                            className="text-gray-400 hover:text-blue-300 transition-colors p-1"
+                          >
+                            <CalendarDays size={16} />
+                          </button>
+                          <div className="pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 z-20 opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200">
+                            <div className="relative px-2.5 py-1.5 rounded-md text-[11px] whitespace-nowrap bg-[#001507] border border-emerald-800 text-emerald-100 shadow-lg shadow-emerald-950/40">
+                              Reprogramar
+                              <div className="absolute right-4 -bottom-1.5 w-2.5 h-2.5 rotate-45 bg-[#001507] border-r border-b border-emerald-800" />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <p className="text-gray-500 text-sm py-2">No hay subtareas asociadas.</p>
@@ -438,7 +508,10 @@ const UrgentTaskCard = ({
               activities={activities}
               dailyLimit={dailyLimit}
               onSave={async (activityId, subtaskId, data) => {
-                await rescheduleSubtask(activityId, subtaskId, data);
+                await rescheduleSubtask(activityId, subtaskId, {
+                  ...data,
+                  status: 'pending',
+                });
                 showSuccess('Subtarea reprogramada correctamente');
               }}
               onClose={() => setRescheduleTarget(null)}
