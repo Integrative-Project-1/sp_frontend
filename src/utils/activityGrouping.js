@@ -34,7 +34,7 @@ const getActivityPendingSubtasks = (activity) => {
 const allSubtasksCompleted = (activity) => {
   const milestones = activity.milestones || [];
   if (milestones.length === 0) return false; // sin subtareas no se considera "terminada"
-  return milestones.every((m) => m.completed);
+  return milestones.every((m) => m.status === 'done');
 };
 
 /**
