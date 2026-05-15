@@ -23,7 +23,7 @@ const getActivityPendingSubtasks = (activity) => {
   const today = getTodayStr();
   const milestones = activity.milestones || [];
   return milestones
-    .filter((m) => !m.completed)
+    .filter((m) => m.status === 'pending')
     .map((m) => ({
       ...m,
       targetDate: normalizeDate(m.targetDate) || normalizeDate(activity.eventDate) || today,
@@ -57,7 +57,12 @@ export const groupAndSortActivities = (activities) => {
     const pending = getActivityPendingSubtasks(activity);
 
     if (pending.length === 0) {
-      terminadasHoy.push(activity);
+      // No hay subtareas pendientes pero tampoco están todas hechas → todas pospuestas
+      // Clasificar por fecha de la actividad sin considerar como terminada
+      const actDate = normalizeDate(activity.eventDate) || today;
+      if (actDate < today) vencidas.push({ activity, pending: [] });
+      else if (actDate === today) paraHoy.push({ activity, pending: [] });
+      else proximas.push({ activity, pending: [] });
       return;
     }
 
@@ -82,13 +87,13 @@ export const groupAndSortActivities = (activities) => {
     if (dateA !== dateB) return dateA - dateB;
     const minEffortA = Math.min(...a.pending.map((p) => p.estimatedEffort));
     const minEffortB = Math.min(...b.pending.map((p) => p.estimatedEffort));
-    return minEffortA - minEffortB;
+    return minEffortA - minEffortB || 0;
   };
 
   const sortParaHoy = (a, b) => {
     const minEffortA = Math.min(...a.pending.map((p) => p.estimatedEffort));
     const minEffortB = Math.min(...b.pending.map((p) => p.estimatedEffort));
-    return minEffortA - minEffortB;
+    return minEffortA - minEffortB || 0;
   };
 
   const sortProximas = (a, b) => {
@@ -97,7 +102,7 @@ export const groupAndSortActivities = (activities) => {
     if (dateA !== dateB) return dateA - dateB;
     const minEffortA = Math.min(...a.pending.map((p) => p.estimatedEffort));
     const minEffortB = Math.min(...b.pending.map((p) => p.estimatedEffort));
-    return minEffortA - minEffortB;
+    return minEffortA - minEffortB || 0;
   };
 
   vencidas.sort(sortVencidas);

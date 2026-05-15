@@ -48,7 +48,7 @@ export default function SubtaskList({ subtasks, onEdit, onDelete, onStatusChange
     const newStatus = subtask.status === 'done' ? 'pending' : 'done';
     onStatusChange?.(subtask, {
       status: newStatus,
-      note: newStatus === 'pending' ? '' : subtask.note,
+      note: subtask.note,
     });
   };
 
@@ -85,7 +85,7 @@ export default function SubtaskList({ subtasks, onEdit, onDelete, onStatusChange
                 <p className="text-xs text-gray-500 mt-0.5">
                   {subtask.target_date} · {parseFloat(subtask.estimated_hours)}h estimadas
                 </p>
-                {subtask.status === 'postponed' && subtask.note && (
+                {subtask.note && (
                   <p className="text-xs text-amber-500 italic mt-0.5">Nota: {subtask.note}</p>
                 )}
               </div>
