@@ -90,6 +90,7 @@ const UrgentTaskCard = ({
   onDeleteActivity,
   variant = 'vencidas',
   showEmergency = false,
+  Icon = AlertCircle,
 }) => {
   const { showSuccess, showError } = useToast();
   const { activities, rescheduleSubtask, updateSubtaskStatus } = useActivitiesContext();
@@ -164,6 +165,17 @@ const UrgentTaskCard = ({
     <div
       className={`relative bg-[#1e293b]/40 border-l-4 ${borderClass} rounded-xl overflow-hidden transition-all`}
     >
+      {showEmergency && (
+        <div
+          title="Te has pasado del límite de horas"
+          aria-label="Te has pasado del límite de horas"
+          className="absolute -top-3 -right-3 z-20"
+        >
+          <div className="bg-red-600 text-white rounded-full p-2 border-2 border-red-700 shadow-lg">
+            <AlertTriangle size={18} />
+          </div>
+        </div>
+      )}
       <div
         role="button"
         tabIndex={0}
@@ -174,7 +186,7 @@ const UrgentTaskCard = ({
         <div className="grid gap-4">
           <div className="flex items-start justify-between">
             <div className={`p-3 rounded-full ${iconClass}`}>
-              <AlertCircle size={24} />
+              <Icon size={24} />
             </div>
             <div className="flex items-center gap-3">
               <span className={`px-3 py-1 rounded-full text-xs font-bold border ${badgeClass}`}>
@@ -212,19 +224,6 @@ const UrgentTaskCard = ({
                   <button
                     type="button"
                     onClick={(e) => {
-                      {
-                        showEmergency && (
-                          <div
-                            title="Te has pasado del límite de horas"
-                            aria-label="Te has pasado del límite de horas"
-                            className="absolute -top-3 -right-3"
-                          >
-                            <div className="bg-red-600 text-white rounded-full p-2 border-2 border-red-700 shadow-lg">
-                              <AlertTriangle size={18} />
-                            </div>
-                          </div>
-                        );
-                      }
                       e.stopPropagation();
                       handleToggleCompleted(milestone);
                     }}
