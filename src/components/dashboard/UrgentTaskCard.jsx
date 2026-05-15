@@ -1,5 +1,14 @@
 import React, { useState } from 'react';
-import { AlertCircle, ChevronDown, ChevronUp, Check, Trash2, Pencil, CalendarDays, Clock } from 'lucide-react';
+import {
+  AlertCircle,
+  ChevronDown,
+  ChevronUp,
+  Check,
+  Trash2,
+  Pencil,
+  CalendarDays,
+  Clock,
+} from 'lucide-react';
 import { format, parseISO, differenceInCalendarDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 import ConfirmModal from '../common/ConfirmModal';
@@ -150,34 +159,38 @@ const UrgentTaskCard = ({
     : 0;
 
   return (
-    <div className={`bg-[#1e293b]/40 border-l-4 ${borderClass} rounded-xl overflow-hidden transition-all`}>
+    <div
+      className={`bg-[#1e293b]/40 border-l-4 ${borderClass} rounded-xl overflow-hidden transition-all`}
+    >
       <div
         role="button"
         tabIndex={0}
         onClick={onToggleExpand}
         onKeyDown={(e) => e.key === 'Enter' && onToggleExpand()}
-        className="p-5 flex items-center justify-between group hover:bg-[#1e293b]/60 transition-all cursor-pointer"
+        className="p-5 group hover:bg-[#1e293b]/60 transition-all cursor-pointer"
       >
-        <div className="flex items-center gap-4">
-          <div className={`p-3 rounded-full ${iconClass}`}>
-            <AlertCircle size={24} />
+        <div className="grid gap-4">
+          <div className="flex items-start justify-between">
+            <div className={`p-3 rounded-full ${iconClass}`}>
+              <AlertCircle size={24} />
+            </div>
+            <div className="flex items-center gap-3">
+              <span className={`px-3 py-1 rounded-full text-xs font-bold border ${badgeClass}`}>
+                {variant === 'terminadas' ? `${progress}%` : (countdown ?? 'Pronto')}
+              </span>
+              {isExpanded ? (
+                <ChevronUp className="text-gray-400" size={20} />
+              ) : (
+                <ChevronDown className="text-gray-400" size={20} />
+              )}
+            </div>
           </div>
           <div>
             <h4 className="text-white font-semibold">{title}</h4>
-            <p className="text-gray-400 text-xs">
+            <p className="text-gray-400 text-xs mt-1">
               {course} • Vence: {formatDeadline(deadline)}
             </p>
           </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <span className={`px-3 py-1 rounded-full text-xs font-bold border ${badgeClass}`}>
-            {variant === 'terminadas' ? `${progress}%` : (countdown ?? 'Pronto')}
-          </span>
-          {isExpanded ? (
-            <ChevronUp className="text-gray-400" size={20} />
-          ) : (
-            <ChevronDown className="text-gray-400" size={20} />
-          )}
         </div>
       </div>
 
@@ -324,7 +337,10 @@ const UrgentTaskCard = ({
           <ConfirmModal
             open={confirmEdit}
             onClose={() => setConfirmEdit(false)}
-            onConfirm={() => { onEditActivity?.(activity); setConfirmEdit(false); }}
+            onConfirm={() => {
+              onEditActivity?.(activity);
+              setConfirmEdit(false);
+            }}
             title="Editar actividad"
             message="¿Deseas modificar los datos de esta actividad?"
             confirmLabel="Editar"
