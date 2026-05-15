@@ -172,7 +172,7 @@ const HomePage = () => {
     );
   }
 
-  const renderActivityCard = (activity, variant) => (
+  const renderActivityCard = (activity, variant, Icon) => (
     <UrgentTaskCard
       key={activity.id}
       activity={activity}
@@ -182,6 +182,7 @@ const HomePage = () => {
       onEditActivity={(a) => navigate(`/editar/${a.id}`)}
       onDeleteActivity={handleDeleteActivity}
       variant={variant}
+      Icon={Icon}
       showEmergency={latestHasCapacityConflict && String(activity.id) === String(latestActivityId)}
     />
   );
@@ -244,7 +245,9 @@ const HomePage = () => {
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
             <h1 className="text-3xl font-bold text-white">Prioridades de Hoy</h1>
-            <p className="text-emerald-100/70 mt-1">Visualiza tus tareas como tablero Kanban para priorizar rapido.</p>
+            <p className="text-emerald-100/70 mt-1">
+              Visualiza tus tareas como tablero Kanban para priorizar rapido.
+            </p>
           </div>
           <div className="w-full sm:w-[360px] bg-[#01230f]/55 border border-emerald-950 rounded-2xl px-4 py-3">
             <div className="flex items-center justify-between">
@@ -260,12 +263,15 @@ const HomePage = () => {
                   </button>
                   <div className="pointer-events-none absolute -top-3 right-0 z-30 opacity-0 -translate-y-full group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200">
                     <div className="relative w-[260px] sm:w-[320px] max-w-[calc(100vw-2rem)] px-3 py-2 rounded-md text-[11px] leading-4 bg-[#001507] border border-emerald-800 text-emerald-100 shadow-lg shadow-emerald-950/40 whitespace-normal break-words">
-                      <div className="font-semibold text-emerald-50">¿Qué significan las barras?</div>
+                      <div className="font-semibold text-emerald-50">
+                        ¿Qué significan las barras?
+                      </div>
                       <div className="mt-1 text-emerald-100/90">
                         Barra 1 (arriba): cuánto de tu capacidad ya está usado hoy.
                       </div>
                       <div className="mt-1 text-emerald-100/90">
-                        Barra 2 (abajo): mapa de calor del “riesgo” (verde = ok, amarillo = cerca del límite, rojo = al límite o excedido). El punto marca tu nivel actual.
+                        Barra 2 (abajo): mapa de calor del “riesgo” (verde = ok, amarillo = cerca
+                        del límite, rojo = al límite o excedido). El punto marca tu nivel actual.
                       </div>
                       <div className="absolute right-4 -bottom-1.5 w-2.5 h-2.5 rotate-45 bg-[#001507] border-r border-b border-emerald-800" />
                     </div>
@@ -289,7 +295,12 @@ const HomePage = () => {
               </div>
 
               <div className="mt-2 h-2 rounded-full overflow-hidden border border-emerald-950 relative">
-                <div className="absolute inset-0" style={{ background: 'linear-gradient(90deg, #22c55e 0%, #f59e0b 55%, #ef4444 100%)' }} />
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    background: 'linear-gradient(90deg, #22c55e 0%, #f59e0b 55%, #ef4444 100%)',
+                  }}
+                />
                 <div
                   className="absolute right-0 top-0 h-full bg-[#001507]/70"
                   style={{ width: `${Math.max(0, 100 - ratioClamped * 100)}%` }}
@@ -311,9 +322,13 @@ const HomePage = () => {
 
             <div className="mt-2 flex items-center justify-between text-[11px]">
               {usedHoursToday <= safeDailyLimit ? (
-                <span className="text-emerald-100/75">Disponible: {fmtHours(safeDailyLimit - usedHoursToday)}h</span>
+                <span className="text-emerald-100/75">
+                  Disponible: {fmtHours(safeDailyLimit - usedHoursToday)}h
+                </span>
               ) : (
-                <span className="text-red-300">Excedido: +{fmtHours(usedHoursToday - safeDailyLimit)}h</span>
+                <span className="text-red-300">
+                  Excedido: +{fmtHours(usedHoursToday - safeDailyLimit)}h
+                </span>
               )}
               <span className="text-emerald-100/55">Basado en subtareas programadas para hoy</span>
             </div>
@@ -382,7 +397,10 @@ const HomePage = () => {
               <p className="text-gray-500">No hay actividades que coincidan con los filtros.</p>
               <button
                 type="button"
-                onClick={() => { clearFilters(); setSearch(''); }}
+                onClick={() => {
+                  clearFilters();
+                  setSearch('');
+                }}
                 className="mt-3 text-emerald-300 hover:text-emerald-200 text-sm transition-colors"
               >
                 Limpiar filtros
@@ -455,18 +473,24 @@ const HomePage = () => {
                     }`}
                   >
                     <header className="flex items-center justify-between mb-3">
-                      <h2 className={`text-sm font-semibold flex items-center gap-2 ${column.iconClass}`}>
+                      <h2
+                        className={`text-sm font-semibold flex items-center gap-2 ${column.iconClass}`}
+                      >
                         <ColumnIcon size={16} />
                         {column.title}
                       </h2>
-                      <span className={`text-xs font-semibold px-2 py-1 rounded-full border ${column.badgeClass}`}>
+                      <span
+                        className={`text-xs font-semibold px-2 py-1 rounded-full border ${column.badgeClass}`}
+                      >
                         {column.cards.length}
                       </span>
                     </header>
 
                     <div className="space-y-2 min-h-20">
                       {column.cards.length > 0 ? (
-                        column.cards.map((activity) => renderActivityCard(activity, column.variant))
+                        column.cards.map((activity) =>
+                          renderActivityCard(activity, column.variant, ColumnIcon)
+                        )
                       ) : (
                         <div className="px-3 py-6 text-center rounded-xl border border-dashed border-emerald-900 text-emerald-100/45 text-xs">
                           Sin tareas en esta columna
