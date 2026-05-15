@@ -2,7 +2,18 @@ import React, { useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Calendar, Lightbulb, Type, GraduationCap, Clock, X, Check, Plus, Trash2, Info } from 'lucide-react';
+import {
+  Calendar,
+  Lightbulb,
+  Type,
+  GraduationCap,
+  Clock,
+  X,
+  Check,
+  Plus,
+  Trash2,
+  Info,
+} from 'lucide-react';
 
 // Esquema de validación
 const activitySchema = z.object({
@@ -39,11 +50,21 @@ const ActivityForm = ({ onSubmit, onCancel, initialData }) => {
   });
 
   const watchedEventDate = useWatch({ control, name: 'eventDate' });
-  const defaultEventDate = initialData?.eventDate || watchedEventDate || new Date().toISOString().slice(0, 10);
+  const defaultEventDate =
+    initialData?.eventDate || watchedEventDate || new Date().toISOString().slice(0, 10);
 
   const [milestones, setMilestones] = useState(() => {
     const ms = initialData?.milestones || [];
-    if (ms.length === 0) return [{ id: crypto.randomUUID(), text: '', completed: false, targetDate: defaultEventDate, estimatedEffort: 3 }];
+    if (ms.length === 0)
+      return [
+        {
+          id: crypto.randomUUID(),
+          text: '',
+          completed: false,
+          targetDate: defaultEventDate,
+          estimatedEffort: 3,
+        },
+      ];
     return ms.map((m) => ({
       id: crypto.randomUUID(),
       text: m.text || '',
@@ -65,15 +86,21 @@ const ActivityForm = ({ onSubmit, onCancel, initialData }) => {
     setMilestones((prev) => {
       const next = prev.filter((m) => m.id !== id);
       return next.length === 0
-        ? [{ id: crypto.randomUUID(), text: '', completed: false, targetDate: defaultEventDate, estimatedEffort: 3 }]
+        ? [
+            {
+              id: crypto.randomUUID(),
+              text: '',
+              completed: false,
+              targetDate: defaultEventDate,
+              estimatedEffort: 3,
+            },
+          ]
         : next;
     });
   };
 
   const updateMilestone = (id, field, value) => {
-    setMilestones((prev) =>
-      prev.map((m) => (m.id === id ? { ...m, [field]: value } : m))
-    );
+    setMilestones((prev) => prev.map((m) => (m.id === id ? { ...m, [field]: value } : m)));
   };
 
   const handleFormSubmit = async (data) => {
@@ -134,7 +161,10 @@ const ActivityForm = ({ onSubmit, onCancel, initialData }) => {
         <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
           {/* Título */}
           <div className="space-y-2">
-            <label htmlFor="activity-title" className="text-xs font-medium text-emerald-300 uppercase tracking-wider">
+            <label
+              htmlFor="activity-title"
+              className="text-xs font-medium text-emerald-300 uppercase tracking-wider"
+            >
               Título de la Actividad *
             </label>
             <div className="relative group">
@@ -149,13 +179,20 @@ const ActivityForm = ({ onSubmit, onCancel, initialData }) => {
                 className="w-full bg-[#1e293b] border border-gray-700 text-white rounded-xl py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
               />
             </div>
-            {errors.title && <span className="text-red-400 text-xs" role="alert">{errors.title.message}</span>}
+            {errors.title && (
+              <span className="text-red-400 text-xs" role="alert">
+                {errors.title.message}
+              </span>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             {/* Tipo */}
             <div className="space-y-2">
-              <label htmlFor="activity-type" className="text-xs font-medium text-emerald-300 uppercase tracking-wider">
+              <label
+                htmlFor="activity-type"
+                className="text-xs font-medium text-emerald-300 uppercase tracking-wider"
+              >
                 Tipo *
               </label>
               <select
@@ -170,12 +207,19 @@ const ActivityForm = ({ onSubmit, onCancel, initialData }) => {
                 <option value="proyecto">Proyecto</option>
                 <option value="otro">Otro</option>
               </select>
-              {errors.type && <span className="text-red-400 text-xs" role="alert">{errors.type.message}</span>}
+              {errors.type && (
+                <span className="text-red-400 text-xs" role="alert">
+                  {errors.type.message}
+                </span>
+              )}
             </div>
 
             {/* Curso */}
             <div className="space-y-2">
-              <label htmlFor="activity-course" className="text-xs font-medium text-emerald-300 uppercase tracking-wider">
+              <label
+                htmlFor="activity-course"
+                className="text-xs font-medium text-emerald-300 uppercase tracking-wider"
+              >
                 Curso *
               </label>
               <div className="relative group">
@@ -191,7 +235,9 @@ const ActivityForm = ({ onSubmit, onCancel, initialData }) => {
                 />
               </div>
               {errors.course && (
-                <span className="text-red-400 text-xs" role="alert">{errors.course.message}</span>
+                <span className="text-red-400 text-xs" role="alert">
+                  {errors.course.message}
+                </span>
               )}
             </div>
           </div>
@@ -199,7 +245,10 @@ const ActivityForm = ({ onSubmit, onCancel, initialData }) => {
           <div className="grid grid-cols-2 gap-4">
             {/* Fecha Evento */}
             <div className="space-y-2">
-              <label htmlFor="activity-event-date" className="text-xs font-medium text-emerald-300 uppercase tracking-wider">
+              <label
+                htmlFor="activity-event-date"
+                className="text-xs font-medium text-emerald-300 uppercase tracking-wider"
+              >
                 Fecha del Evento *
               </label>
               <input
@@ -209,13 +258,18 @@ const ActivityForm = ({ onSubmit, onCancel, initialData }) => {
                 className="w-full bg-[#1e293b] border border-gray-700 text-white rounded-xl py-3 px-4 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
               />
               {errors.eventDate && (
-                <span className="text-red-400 text-xs" role="alert">{errors.eventDate.message}</span>
+                <span className="text-red-400 text-xs" role="alert">
+                  {errors.eventDate.message}
+                </span>
               )}
             </div>
 
             {/* Hora */}
             <div className="space-y-2">
-              <label htmlFor="activity-start-time" className="text-xs font-medium text-emerald-300 uppercase tracking-wider">
+              <label
+                htmlFor="activity-start-time"
+                className="text-xs font-medium text-emerald-300 uppercase tracking-wider"
+              >
                 Hora de Inicio
               </label>
               <div className="relative">
@@ -269,7 +323,9 @@ const ActivityForm = ({ onSubmit, onCancel, initialData }) => {
                   <select
                     aria-label={`Esfuerzo estimado de subtarea ${index + 1}`}
                     value={milestone.estimatedEffort ?? 3}
-                    onChange={(e) => updateMilestone(milestone.id, 'estimatedEffort', Number(e.target.value))}
+                    onChange={(e) =>
+                      updateMilestone(milestone.id, 'estimatedEffort', Number(e.target.value))
+                    }
                     className="bg-[#0f172a] border border-gray-600 text-white rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
                   >
                     {[1, 2, 3, 4, 5].map((n) => (
@@ -292,7 +348,13 @@ const ActivityForm = ({ onSubmit, onCancel, initialData }) => {
             <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-4 py-3">
               <Info className="text-emerald-300 shrink-0" size={18} />
               <p className="text-xs text-emerald-100">
-                Las actividades programadas en las próximas 48 horas se marcarán como &quot;Alta prioridad&quot; en tu panel automáticamente.
+                Las actividades programadas en las próximas 48 horas se marcarán como &quot;Alta
+                prioridad&quot; en tu panel automáticamente.
+                <br />
+                <span className="font-semibold">Esfuerzo:</span> El número de esfuerzo representa
+                las horas que dedicarás a cada subtarea. Ejemplo:{' '}
+                <span className="italic">Esfuerzo 3</span> indica que invertirás 3 horas en esa
+                subtarea.
               </p>
             </div>
           </div>
@@ -312,7 +374,13 @@ const ActivityForm = ({ onSubmit, onCancel, initialData }) => {
               className="bg-emerald-500 hover:bg-emerald-600 text-[#001507] px-8 py-2.5 rounded-xl font-medium flex items-center gap-2 shadow-lg shadow-emerald-500/20 transition-all disabled:opacity-50"
             >
               <Check size={18} />
-              {isSubmitting ? (isEdit ? 'Guardando...' : 'Creando...') : isEdit ? 'Guardar Cambios' : 'Crear Actividad'}
+              {isSubmitting
+                ? isEdit
+                  ? 'Guardando...'
+                  : 'Creando...'
+                : isEdit
+                  ? 'Guardar Cambios'
+                  : 'Crear Actividad'}
             </button>
           </div>
         </form>
