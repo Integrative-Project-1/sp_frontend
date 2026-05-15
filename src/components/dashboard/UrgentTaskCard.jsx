@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import {
   AlertCircle,
+  AlertTriangle,
   ChevronDown,
   ChevronUp,
   Check,
@@ -88,6 +89,7 @@ const UrgentTaskCard = ({
   onEditActivity,
   onDeleteActivity,
   variant = 'vencidas',
+  showEmergency = false,
 }) => {
   const { showSuccess, showError } = useToast();
   const { activities, rescheduleSubtask, updateSubtaskStatus } = useActivitiesContext();
@@ -160,7 +162,7 @@ const UrgentTaskCard = ({
 
   return (
     <div
-      className={`bg-[#1e293b]/40 border-l-4 ${borderClass} rounded-xl overflow-hidden transition-all`}
+      className={`relative bg-[#1e293b]/40 border-l-4 ${borderClass} rounded-xl overflow-hidden transition-all`}
     >
       <div
         role="button"
@@ -210,6 +212,19 @@ const UrgentTaskCard = ({
                   <button
                     type="button"
                     onClick={(e) => {
+                      {
+                        showEmergency && (
+                          <div
+                            title="Te has pasado del límite de horas"
+                            aria-label="Te has pasado del límite de horas"
+                            className="absolute -top-3 -right-3"
+                          >
+                            <div className="bg-red-600 text-white rounded-full p-2 border-2 border-red-700 shadow-lg">
+                              <AlertTriangle size={18} />
+                            </div>
+                          </div>
+                        );
+                      }
                       e.stopPropagation();
                       handleToggleCompleted(milestone);
                     }}
@@ -271,6 +286,7 @@ const UrgentTaskCard = ({
                         e.stopPropagation();
                         setPostponeTarget(milestone);
                       }}
+                      title="Posponer"
                       aria-label={`Posponer subtarea: ${milestone.text}`}
                       className="text-gray-500 hover:text-amber-400 transition-colors p-1"
                     >
@@ -285,6 +301,7 @@ const UrgentTaskCard = ({
                       e.stopPropagation();
                       setRescheduleTarget(milestone);
                     }}
+                    title="Reprogramar"
                     aria-label={`Reprogramar subtarea: ${milestone.text}`}
                     className="text-gray-500 hover:text-blue-400 transition-colors p-1"
                   >
@@ -298,6 +315,8 @@ const UrgentTaskCard = ({
                       e.stopPropagation();
                       setConfirmDelete({ type: 'milestone', index });
                     }}
+                    title="Eliminar Subtarea"
+                    aria-label={`Eliminar subtarea: ${milestone.text}`}
                     className="text-gray-500 hover:text-red-400 transition-colors p-1"
                   >
                     <Trash2 size={16} />
