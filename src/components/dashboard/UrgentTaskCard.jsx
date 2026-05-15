@@ -80,7 +80,7 @@ const UrgentTaskCard = ({
   onDeleteActivity,
   variant = 'vencidas',
 }) => {
-  const { showSuccess } = useToast();
+  const { showSuccess, showError } = useToast();
   const { activities, rescheduleSubtask, updateSubtaskStatus } = useActivitiesContext();
   const { dailyLimit } = useSubtaskReschedule();
   const [rescheduleTarget, setRescheduleTarget] = useState(null);
@@ -104,10 +104,14 @@ const UrgentTaskCard = ({
   /* Toggle done/pending via API */
   const handleToggleCompleted = async (milestone) => {
     const newStatus = milestone.status === 'done' ? 'pending' : 'done';
-    await updateSubtaskStatus(activity.id, milestone.id, {
-      status: newStatus,
-      note: newStatus === 'pending' ? '' : milestone.note,
-    });
+    try {
+      await updateSubtaskStatus(activity.id, milestone.id, {
+        status: newStatus,
+        note: milestone.note,
+      });
+    } catch {
+      showError('Error al actualizar la subtarea. Intenta de nuevo.');
+    }
   };
 
   const handleStartEdit = (index) => {
@@ -238,7 +242,7 @@ const UrgentTaskCard = ({
                           · {formatCountdown(milestone.targetDate)}
                         </span>
                       )}
-                      {milestone.status === 'postponed' && milestone.note && (
+                      {milestone.note && (
                         <span className="ml-2 text-xs text-amber-600 italic">
                           · {milestone.note}
                         </span>

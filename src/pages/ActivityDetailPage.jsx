@@ -54,8 +54,12 @@ export default function ActivityDetailPage() {
   };
 
   const handleSubtaskStatusChange = async (subtask, { status, note }) => {
-    await updateSubtask(id, subtask.id, { status, note });
-    await loadActivity();
+    try {
+      await updateSubtask(id, subtask.id, { status, note });
+      await loadActivity();
+    } catch {
+      showError('Error al actualizar la subtarea. Intenta de nuevo.');
+    }
   };
 
   const handleDeleteConfirm = async () => {

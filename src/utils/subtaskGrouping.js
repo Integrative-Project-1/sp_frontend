@@ -55,10 +55,10 @@ export const groupAndSortSubtasks = (activities) => {
   const flat = flattenSubtasks(activities);
   const today = getTodayStr();
 
-  const vencidas = flat.filter((s) => !s.completed && s.targetDate < today);
-  const paraHoy = flat.filter((s) => !s.completed && s.targetDate === today);
-  const proximas = flat.filter((s) => !s.completed && s.targetDate > today);
-  const terminadasHoy = flat.filter((s) => s.completed);
+  const vencidas = flat.filter((s) => s.status === 'pending' && s.targetDate < today);
+  const paraHoy = flat.filter((s) => s.status === 'pending' && s.targetDate === today);
+  const proximas = flat.filter((s) => s.status === 'pending' && s.targetDate > today);
+  const terminadasHoy = flat.filter((s) => s.status === 'done');
 
   const sortByDateAndEffort = (a, b) => {
     const dateCompare = new Date(a.targetDate) - new Date(b.targetDate);
