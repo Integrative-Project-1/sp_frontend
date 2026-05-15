@@ -33,7 +33,7 @@ const HomePage = () => {
   const [showRule, setShowRule] = useState(false);
   const [expandedId, setExpandedId] = useState(null);
   const [search, setSearch] = useState('');
-  const [boardView, setBoardView] = useState('grouped'); // grouped | continuous
+  const [boardView, setBoardView] = useState('continuous'); // continuous | grouped
 
   const {
     filtered,
@@ -441,14 +441,14 @@ const HomePage = () => {
                 className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-emerald-800 bg-[#01230f]/60 text-emerald-200 hover:bg-[#01230f] transition-colors text-xs"
                 aria-label="Cambiar vista del tablero"
               >
-                {boardView === 'grouped' ? <Rows3 size={14} /> : <LayoutGrid size={14} />}
-                {boardView === 'grouped' ? 'Columnas seguidas' : 'Vista actual'}
+                {boardView === 'grouped' ? <LayoutGrid size={14} /> : <Rows3 size={14} />}
+                {boardView === 'grouped' ? 'Ver en bloques' : 'Ver en columnas'}
               </button>
               <div className="pointer-events-none absolute -top-12 right-0 z-20 opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200">
                 <div className="relative px-2.5 py-1.5 rounded-md text-[11px] whitespace-nowrap bg-[#001507] border border-emerald-800 text-emerald-100 shadow-lg shadow-emerald-950/40">
                   {boardView === 'grouped'
-                    ? 'Cambiar a columnas de seguido'
-                    : 'Cambiar a vista en bloques'}
+                    ? 'Cambiar a vista en bloques'
+                    : 'Cambiar a vista en columnas'}
                   <div className="absolute right-4 -bottom-1.5 w-2.5 h-2.5 rotate-45 bg-[#001507] border-r border-b border-emerald-800" />
                 </div>
               </div>

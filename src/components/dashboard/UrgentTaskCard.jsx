@@ -166,13 +166,15 @@ const UrgentTaskCard = ({
       className={`relative bg-[#1e293b]/40 border-l-4 ${borderClass} rounded-xl overflow-hidden transition-all`}
     >
       {showEmergency && (
-        <div
-          title="Te has pasado del límite de horas"
-          aria-label="Te has pasado del límite de horas"
-          className="absolute -top-3 -right-3 z-20"
-        >
+        <div className="absolute -top-3 -right-3 z-20 group">
           <div className="bg-red-600 text-white rounded-full p-2 border-2 border-red-700 shadow-lg">
             <AlertTriangle size={18} />
+          </div>
+          <div className="pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 z-20 opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200">
+            <div className="relative px-2.5 py-1.5 rounded-md text-[11px] whitespace-nowrap bg-[#001507] border border-emerald-800 text-emerald-100 shadow-lg shadow-emerald-950/40">
+              Te has pasado del límite de horas
+              <div className="absolute right-4 -bottom-1.5 w-2.5 h-2.5 rotate-45 bg-[#001507] border-r border-b border-emerald-800" />
+            </div>
           </div>
         </div>
       )}
@@ -279,47 +281,68 @@ const UrgentTaskCard = ({
 
                   {/* Posponer */}
                   {milestone.status !== 'done' && (
+                    <div className="relative group">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPostponeTarget(milestone);
+                        }}
+                        aria-label={`Posponer subtarea: ${milestone.text}`}
+                        className="text-gray-500 hover:text-amber-400 transition-colors p-1"
+                      >
+                        <Clock size={16} />
+                      </button>
+                      <div className="pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 z-20 opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200">
+                        <div className="relative px-2.5 py-1.5 rounded-md text-[11px] whitespace-nowrap bg-[#001507] border border-emerald-800 text-emerald-100 shadow-lg shadow-emerald-950/40">
+                          Posponer
+                          <div className="absolute right-4 -bottom-1.5 w-2.5 h-2.5 rotate-45 bg-[#001507] border-r border-b border-emerald-800" />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Reprogramar */}
+                  <div className="relative group">
                     <button
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
-                        setPostponeTarget(milestone);
+                        setRescheduleTarget(milestone);
                       }}
-                      title="Posponer"
-                      aria-label={`Posponer subtarea: ${milestone.text}`}
-                      className="text-gray-500 hover:text-amber-400 transition-colors p-1"
+                      aria-label={`Reprogramar subtarea: ${milestone.text}`}
+                      className="text-gray-500 hover:text-blue-400 transition-colors p-1"
                     >
-                      <Clock size={16} />
+                      <CalendarDays size={16} />
                     </button>
-                  )}
-
-                  {/* Reprogramar */}
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setRescheduleTarget(milestone);
-                    }}
-                    title="Reprogramar"
-                    aria-label={`Reprogramar subtarea: ${milestone.text}`}
-                    className="text-gray-500 hover:text-blue-400 transition-colors p-1"
-                  >
-                    <CalendarDays size={16} />
-                  </button>
+                    <div className="pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 z-20 opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200">
+                      <div className="relative px-2.5 py-1.5 rounded-md text-[11px] whitespace-nowrap bg-[#001507] border border-emerald-800 text-emerald-100 shadow-lg shadow-emerald-950/40">
+                        Reprogramar
+                        <div className="absolute right-4 -bottom-1.5 w-2.5 h-2.5 rotate-45 bg-[#001507] border-r border-b border-emerald-800" />
+                      </div>
+                    </div>
+                  </div>
 
                   {/* Eliminar */}
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setConfirmDelete({ type: 'milestone', index });
-                    }}
-                    title="Eliminar Subtarea"
-                    aria-label={`Eliminar subtarea: ${milestone.text}`}
-                    className="text-gray-500 hover:text-red-400 transition-colors p-1"
-                  >
-                    <Trash2 size={16} />
-                  </button>
+                  <div className="relative group">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setConfirmDelete({ type: 'milestone', index });
+                      }}
+                      aria-label={`Eliminar subtarea: ${milestone.text}`}
+                      className="text-gray-500 hover:text-red-400 transition-colors p-1"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                    <div className="pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 z-20 opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200">
+                      <div className="relative px-2.5 py-1.5 rounded-md text-[11px] whitespace-nowrap bg-[#001507] border border-emerald-800 text-emerald-100 shadow-lg shadow-emerald-950/40">
+                        Eliminar subtarea
+                        <div className="absolute right-4 -bottom-1.5 w-2.5 h-2.5 rotate-45 bg-[#001507] border-r border-b border-emerald-800" />
+                      </div>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
