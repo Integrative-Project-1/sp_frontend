@@ -249,7 +249,7 @@ const HomePage = () => {
               Visualiza tus tareas como tablero Kanban para priorizar rapido.
             </p>
           </div>
-          <div className="w-full sm:w-[360px] bg-[#01230f]/55 border border-emerald-950 rounded-2xl px-4 py-3">
+          <div className="w-full sm:w-90 bg-[#01230f]/55 border border-emerald-950 rounded-2xl px-4 py-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <p className="text-xs font-semibold text-emerald-100/80">Capacidad de hoy</p>
@@ -262,7 +262,7 @@ const HomePage = () => {
                     <HelpCircle size={14} />
                   </button>
                   <div className="pointer-events-none absolute -top-3 right-0 z-30 opacity-0 -translate-y-full group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200">
-                    <div className="relative w-[260px] sm:w-[320px] max-w-[calc(100vw-2rem)] px-3 py-2 rounded-md text-[11px] leading-4 bg-[#001507] border border-emerald-800 text-emerald-100 shadow-lg shadow-emerald-950/40 whitespace-normal break-words">
+                    <div className="relative w-65 sm:w-80 max-w-[calc(100vw-2rem)] px-3 py-2 rounded-md text-[11px] leading-4 bg-[#001507] border border-emerald-800 text-emerald-100 shadow-lg shadow-emerald-950/40 whitespace-normal wrap-break-word">
                       <div className="font-semibold text-emerald-50">
                         ¿Qué significan las barras?
                       </div>
@@ -469,7 +469,7 @@ const HomePage = () => {
                   <section
                     key={column.key}
                     className={`bg-[#01230f]/45 border border-emerald-950 rounded-2xl p-3 h-fit ${
-                      boardView === 'continuous' ? 'w-[290px] shrink-0' : 'w-full'
+                      boardView === 'continuous' ? 'w-72.5 shrink-0' : 'w-full'
                     }`}
                   >
                     <header className="flex items-center justify-between mb-3">
