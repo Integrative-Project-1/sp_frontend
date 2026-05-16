@@ -7,6 +7,7 @@ import ComingSoonPage from './pages/ComingSoonPage';
 import LoginPage from './pages/LoginPage';
 import CapacityPage from './pages/CapacityPage';
 import ProgressPage from './pages/ProgressPage';
+import ActivityDetailPage from './pages/ActivityDetailPage';
 import ProtectedRoute from './components/common/ProtectedRoute';
 
 export const router = createBrowserRouter([
@@ -25,6 +26,7 @@ export const router = createBrowserRouter([
       { path: '/', element: <HomePage /> },
       { path: '/hoy', element: <HomePage /> },
       { path: '/crear', element: <CreateActivityPage /> },
+      { path: '/actividad/:id', element: <ActivityDetailPage /> },
       { path: '/editar/:id', element: <EditActivityPage /> },
       { path: '/capacidad', element: <CapacityPage /> },
       { path: '/progreso', element: <ProgressPage /> },

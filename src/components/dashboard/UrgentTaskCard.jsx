@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   AlertCircle,
   AlertTriangle,
@@ -95,6 +96,7 @@ const UrgentTaskCard = ({
   LeadingIcon = AlertCircle,
 }) => {
   const CardColumnIcon = LeadingIcon;
+  const navigate = useNavigate();
   const { showSuccess, showError } = useToast();
   const { activities, rescheduleSubtask, updateSubtaskStatus, patchSubtask } =
     useActivitiesContext();
@@ -225,7 +227,12 @@ const UrgentTaskCard = ({
             </div>
           </div>
           <div>
-            <h4 className="text-white font-semibold">{title}</h4>
+            <h4
+              className="text-white font-semibold hover:text-emerald-400 cursor-pointer transition-colors"
+              onClick={(e) => { e.stopPropagation(); navigate(`/actividad/${activity.id}`); }}
+            >
+              {title}
+            </h4>
             <p className="text-gray-400 text-xs mt-1">
               {course} • Vence: {formatDeadline(deadline)}
             </p>
