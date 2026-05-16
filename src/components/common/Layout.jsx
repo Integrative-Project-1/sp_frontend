@@ -10,7 +10,7 @@ const Layout = () => {
 
       {/* Área de contenido principal */}
       <main className="flex-1 overflow-y-auto">
-        <div className="max-w-[1200px] mx-auto p-8">
+        <div className="max-w-[1230px] mx-auto">
           {/* Aquí se renderizarán HomePage, CreateActivityPage, etc. */}
           <Outlet />
         </div>
