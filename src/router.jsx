@@ -29,9 +29,6 @@ export const router = createBrowserRouter([
       { path: '/capacidad', element: <CapacityPage /> },
       { path: '/progreso', element: <ProgressPage /> },
       // Rutas con el mensaje de Próximamente
-      { path: '/calendario', element: <ComingSoonPage title="Calendario" /> },
-      { path: '/cursos', element: <ComingSoonPage title="Mis Cursos" /> },
-      { path: '/evaluaciones', element: <ComingSoonPage title="Evaluaciones" /> },
     ],
   },
 ]);

@@ -10,9 +10,7 @@ const TYPE_UI_TO_API = {
   otro: 'other',
 };
 
-const TYPE_API_TO_UI = Object.fromEntries(
-  Object.entries(TYPE_UI_TO_API).map(([k, v]) => [v, k])
-);
+const TYPE_API_TO_UI = Object.fromEntries(Object.entries(TYPE_UI_TO_API).map(([k, v]) => [v, k]));
 
 const apiToUI = (activity) => ({
   id: String(activity.id),
@@ -24,7 +22,7 @@ const apiToUI = (activity) => ({
   milestones: (activity.subtasks || []).map((s) => ({
     id: String(s.id),
     text: s.name,
-    status: s.status,          // 'pending' | 'done' | 'postponed'
+    status: s.status, // 'pending' | 'done' | 'postponed'
     completed: s.status === 'done',
     note: s.note || '',
     targetDate: s.target_date,
@@ -85,8 +83,56 @@ export const useActivities = () => {
   };
 
   const updateActivity = async (activityId, updates) => {
-    if (updates.title !== undefined) {
-      await svc.updateActivity(activityId, uiToApiActivity(updates));
+    const activityFields = uiToApiActivity(updates);
+    const hasActivityFields = Object.keys(activityFields).length > 0;
+    const hasMilestones = Array.isArray(updates.milestones);
+
+    if (hasActivityFields) {
+      await svc.updateActivity(activityId, activityFields);
+    }
+
+    if (hasMilestones) {
+      const activity = activities.find((a) => a.id === String(activityId));
+      const existingMilestones = activity?.milestones || [];
+      const incomingMilestones = updates.milestones.filter((m) => m.text?.trim());
+
+      const incomingById = new Map(
+        incomingMilestones.filter((m) => m.subtaskId).map((m) => [String(m.subtaskId), m])
+      );
+
+      const milestonesToDelete = existingMilestones.filter((m) => !incomingById.has(String(m.id)));
+
+      const milestonesToUpdate = incomingMilestones.filter((m) => m.subtaskId);
+      const milestonesToCreate = incomingMilestones.filter((m) => !m.subtaskId);
+
+      await Promise.all(
+        milestonesToDelete.map((milestone) => svc.deleteSubtask(activityId, milestone.id))
+      );
+
+      await Promise.all(
+        milestonesToUpdate.map((milestone) =>
+          svc.updateSubtask(activityId, milestone.subtaskId, {
+            name: milestone.text,
+            target_date: milestone.targetDate,
+            estimated_hours: Number(milestone.estimatedEffort) || 1,
+            status: milestone.status || (milestone.completed ? 'done' : 'pending'),
+          })
+        )
+      );
+
+      await Promise.all(
+        milestonesToCreate.map((milestone) =>
+          svc.createSubtask(activityId, {
+            name: milestone.text,
+            target_date: milestone.targetDate,
+            estimated_hours: Number(milestone.estimatedEffort) || 1,
+            status: milestone.status || (milestone.completed ? 'done' : 'pending'),
+          })
+        )
+      );
+    }
+
+    if (hasActivityFields || hasMilestones) {
       await fetchActivities();
     } else {
       setActivities((prev) =>
