@@ -15,9 +15,11 @@ import { es } from 'date-fns/locale';
 import ConfirmModal from '../common/ConfirmModal';
 import RescheduleModal from '../subtask/RescheduleModal';
 import PostponeModal from '../subtask/PostponeModal';
+import SubtaskNotesModal from '../subtask/SubtaskNotesModal';
 import { useToast } from '../../context/ToastContext';
 import { useActivitiesContext } from '../../context/ActivitiesContext';
 import { useSubtaskReschedule } from '../../hooks/useSubtaskReschedule';
+import { getApiErrorMessage } from '../../utils/apiError';
 
 const formatDeadline = (dateStr) => {
   if (!dateStr) return '';
@@ -90,13 +92,16 @@ const UrgentTaskCard = ({
   onDeleteActivity,
   variant = 'vencidas',
   showEmergency = false,
-  Icon = AlertCircle,
+  LeadingIcon = AlertCircle,
 }) => {
+  const CardColumnIcon = LeadingIcon;
   const { showSuccess, showError } = useToast();
-  const { activities, rescheduleSubtask, updateSubtaskStatus } = useActivitiesContext();
+  const { activities, rescheduleSubtask, updateSubtaskStatus, patchSubtask } =
+    useActivitiesContext();
   const { dailyLimit } = useSubtaskReschedule();
   const [rescheduleTarget, setRescheduleTarget] = useState(null);
   const [postponeTarget, setPostponeTarget] = useState(null);
+  const [notesTarget, setNotesTarget] = useState(null);
 
   const title = activity?.title || activity?.activityTitle;
   const course = activity?.course;
@@ -106,7 +111,7 @@ const UrgentTaskCard = ({
   const activeMilestones = milestones.filter((m) => m.status !== 'postponed');
   const postponedMilestones = milestones.filter((m) => m.status === 'postponed');
 
-  const [editingIndex, setEditingIndex] = useState(null);
+  const [editingMilestoneId, setEditingMilestoneId] = useState(null);
   const [editText, setEditText] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [confirmComplete, setConfirmComplete] = useState(null);
@@ -127,44 +132,49 @@ const UrgentTaskCard = ({
     if (!confirmComplete) return;
     const { milestone } = confirmComplete;
     try {
-      await updateSubtaskStatus(activity.id, milestone.id, {
-        status: 'done',
-        note: milestone.note,
-      });
+      await updateSubtaskStatus(activity.id, milestone.id, { status: 'done' });
       showSuccess('Subtarea marcada como realizada');
     } catch (e) {
-      showError('Error al marcar la subtarea. Intenta de nuevo.');
+      showError(getApiErrorMessage(e, 'Error al marcar la subtarea. Intenta de nuevo.'));
     } finally {
       setConfirmComplete(null);
     }
   };
 
-  const handleStartEdit = (index) => {
-    setEditingIndex(index);
-    setEditText(milestones[index]?.text || '');
+  const handleStartEdit = (milestoneId) => {
+    setEditingMilestoneId(milestoneId);
+    setEditText(milestones.find((m) => m.id === milestoneId)?.text || '');
   };
 
   const handleSaveEdit = () => {
-    if (editingIndex === null) return;
-    const updated = milestones.map((m, i) =>
-      i === editingIndex ? { ...m, text: editText.trim() } : m
+    if (!editingMilestoneId) return;
+    const updated = milestones.map((m) =>
+      m.id === editingMilestoneId ? { ...m, text: editText.trim() } : m
     );
     handleUpdateMilestones(updated);
-    setEditingIndex(null);
+    setEditingMilestoneId(null);
     setEditText('');
     showSuccess('Subtarea modificada correctamente');
   };
 
-  const handleDeleteMilestone = (index) => {
-    handleUpdateMilestones(milestones.filter((_, i) => i !== index));
-    if (editingIndex === index) {
-      setEditingIndex(null);
+  const handleDeleteMilestone = (milestoneId) => {
+    handleUpdateMilestones(milestones.filter((m) => m.id !== milestoneId));
+    if (editingMilestoneId === milestoneId) {
+      setEditingMilestoneId(null);
       setEditText('');
-    } else if (editingIndex !== null && editingIndex > index) {
-      setEditingIndex(editingIndex - 1);
     }
     showSuccess('Subtarea eliminada correctamente');
   };
+
+  /** Si al completar esta queda todas en done → la actividad va a Completadas */
+  const completingFinishesActivity = confirmComplete?.milestone
+    ? milestones.filter((m) => m.status !== 'done').length === 1 &&
+      confirmComplete.milestone.status !== 'done'
+    : false;
+
+  const completeConfirmMessage = completingFinishesActivity
+    ? 'Esta es la última subtarea pendiente. Al confirmarla, la actividad pasará a la columna «Completadas».'
+    : '¿Confirmas marcar esta subtarea como realizada? Las demás subtareas seguirán en la lista.';
 
   const borderClass = BORDER_VARIANTS[variant] || BORDER_VARIANTS.vencidas;
   const iconClass = ICON_VARIANTS[variant] || ICON_VARIANTS.vencidas;
@@ -180,10 +190,10 @@ const UrgentTaskCard = ({
     >
       {showEmergency && (
         <div className="absolute -top-3 -right-3 z-20">
-          <div className="bg-red-600 text-white rounded-full p-2 border-2 border-red-700 shadow-lg">
+          <div className="bg-red-600 text-white rounded-full p-2 border-2 border-red-700 shadow-lg peer">
             <AlertTriangle size={18} />
           </div>
-          <div className="pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 z-20 opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200">
+          <div className="pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 z-20 opacity-0 translate-y-1 peer-hover:opacity-100 peer-hover:translate-y-0 transition-all duration-200">
             <div className="relative px-2.5 py-1.5 rounded-md text-[11px] whitespace-nowrap bg-[#001507] border border-emerald-800 text-emerald-100 shadow-lg shadow-emerald-950/40">
               Te has pasado del límite de horas
               <div className="absolute right-4 -bottom-1.5 w-2.5 h-2.5 rotate-45 bg-[#001507] border-r border-b border-emerald-800" />
@@ -201,7 +211,7 @@ const UrgentTaskCard = ({
         <div className="grid gap-4">
           <div className="flex items-start justify-between">
             <div className={`p-3 rounded-full ${iconClass}`}>
-              <Icon size={24} />
+              <CardColumnIcon size={24} />
             </div>
             <div className="flex items-center gap-3">
               <span className={`px-3 py-1 rounded-full text-xs font-bold border ${badgeClass}`}>
@@ -233,10 +243,10 @@ const UrgentTaskCard = ({
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <h6 className="text-xs font-semibold uppercase tracking-wider text-blue-400">
-                    Subtareas
+                    No pospuestas
                   </h6>
                   <span className="text-xs text-gray-400">
-                    {activeMilestones.length} pendiente(s)
+                    {activeMilestones.filter((m) => m.status !== 'done').length} pendiente(s)
                   </span>
                 </div>
                 <div className="space-y-2">
@@ -246,7 +256,7 @@ const UrgentTaskCard = ({
                         key={milestone.id || index}
                         className="flex items-center gap-3 bg-[#1e293b] border border-gray-700 rounded-xl px-4 py-3 group/milestone"
                       >
-                        {/* Checkbox — marca done/pending */}
+                        {/* Checkbox — confirma completar */}
                         <button
                           type="button"
                           onClick={(e) => {
@@ -255,16 +265,15 @@ const UrgentTaskCard = ({
                           }}
                           aria-label={
                             milestone.status === 'done'
-                              ? `Desmarcar subtarea: ${milestone.text}`
+                              ? `Subtarea ya completada: ${milestone.text}`
                               : `Marcar como hecha: ${milestone.text}`
                           }
                           className={`w-5 h-5 rounded border-2 shrink-0 flex items-center justify-center transition-colors ${checkboxClass(milestone.status)}`}
                         >
                           {milestone.status === 'done' && <Check size={12} strokeWidth={3} />}
-                          {milestone.status === 'postponed' && <Clock size={11} />}
                         </button>
 
-                        {editingIndex === index ? (
+                        {editingMilestoneId === milestone.id ? (
                           <input
                             type="text"
                             value={editText}
@@ -273,7 +282,7 @@ const UrgentTaskCard = ({
                             onKeyDown={(e) => {
                               if (e.key === 'Enter') handleSaveEdit();
                               if (e.key === 'Escape') {
-                                setEditingIndex(null);
+                                setEditingMilestoneId(null);
                                 setEditText('');
                               }
                             }}
@@ -285,7 +294,7 @@ const UrgentTaskCard = ({
                           <span
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleStartEdit(index);
+                              handleStartEdit(milestone.id);
                             }}
                             className={`flex-1 text-sm cursor-text ${milestoneTextClass(milestone.status)}`}
                           >
@@ -295,17 +304,12 @@ const UrgentTaskCard = ({
                                 · {formatCountdown(milestone.targetDate)}
                               </span>
                             )}
-                            {milestone.note && (
-                              <span className="ml-2 text-xs text-amber-600 italic">
-                                · {milestone.note}
-                              </span>
-                            )}
                           </span>
                         )}
 
                         {/* Posponer */}
                         {milestone.status !== 'done' && (
-                          <div className="relative group">
+                          <div className="relative">
                             <button
                               type="button"
                               onClick={(e) => {
@@ -313,11 +317,11 @@ const UrgentTaskCard = ({
                                 setPostponeTarget(milestone);
                               }}
                               aria-label={`Posponer subtarea: ${milestone.text}`}
-                              className="text-gray-500 hover:text-amber-400 transition-colors p-1"
+                              className="text-gray-500 hover:text-amber-400 transition-colors p-1 peer"
                             >
                               <Clock size={16} />
                             </button>
-                            <div className="pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 z-20 opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200">
+                            <div className="pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 z-20 opacity-0 translate-y-1 peer-hover:opacity-100 peer-hover:translate-y-0 transition-all duration-200">
                               <div className="relative px-2.5 py-1.5 rounded-md text-[11px] whitespace-nowrap bg-[#001507] border border-emerald-800 text-emerald-100 shadow-lg shadow-emerald-950/40">
                                 Posponer
                                 <div className="absolute right-4 -bottom-1.5 w-2.5 h-2.5 rotate-45 bg-[#001507] border-r border-b border-emerald-800" />
@@ -327,7 +331,7 @@ const UrgentTaskCard = ({
                         )}
 
                         {/* Reprogramar */}
-                        <div className="relative group">
+                        <div className="relative">
                           <button
                             type="button"
                             onClick={(e) => {
@@ -335,11 +339,11 @@ const UrgentTaskCard = ({
                               setRescheduleTarget(milestone);
                             }}
                             aria-label={`Reprogramar subtarea: ${milestone.text}`}
-                            className="text-gray-500 hover:text-blue-400 transition-colors p-1"
+                            className="text-gray-500 hover:text-blue-400 transition-colors p-1 peer"
                           >
                             <CalendarDays size={16} />
                           </button>
-                          <div className="pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 z-20 opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200">
+                          <div className="pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 z-20 opacity-0 translate-y-1 peer-hover:opacity-100 peer-hover:translate-y-0 transition-all duration-200">
                             <div className="relative px-2.5 py-1.5 rounded-md text-[11px] whitespace-nowrap bg-[#001507] border border-emerald-800 text-emerald-100 shadow-lg shadow-emerald-950/40">
                               Reprogramar
                               <div className="absolute right-4 -bottom-1.5 w-2.5 h-2.5 rotate-45 bg-[#001507] border-r border-b border-emerald-800" />
@@ -348,19 +352,19 @@ const UrgentTaskCard = ({
                         </div>
 
                         {/* Eliminar */}
-                        <div className="relative group">
+                        <div className="relative">
                           <button
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
-                              setConfirmDelete({ type: 'milestone', index });
+                              setConfirmDelete({ type: 'milestone', milestoneId: milestone.id });
                             }}
                             aria-label={`Eliminar subtarea: ${milestone.text}`}
-                            className="text-gray-500 hover:text-red-400 transition-colors p-1"
+                            className="text-gray-500 hover:text-red-400 transition-colors p-1 peer"
                           >
                             <Trash2 size={16} />
                           </button>
-                          <div className="pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 z-20 opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200">
+                          <div className="pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 z-20 opacity-0 translate-y-1 peer-hover:opacity-100 peer-hover:translate-y-0 transition-all duration-200">
                             <div className="relative px-2.5 py-1.5 rounded-md text-[11px] whitespace-nowrap bg-[#001507] border border-emerald-800 text-emerald-100 shadow-lg shadow-emerald-950/40">
                               Eliminar subtarea
                               <div className="absolute right-4 -bottom-1.5 w-2.5 h-2.5 rotate-45 bg-[#001507] border-r border-b border-emerald-800" />
@@ -371,7 +375,9 @@ const UrgentTaskCard = ({
                     ))
                   ) : (
                     <div className="px-4 py-3 rounded-xl border border-dashed border-gray-700 text-gray-500 text-sm">
-                      No hay subtareas por hacer.
+                      {postponedMilestones.length > 0
+                        ? 'Todas las subtareas activas están pospuestas; revisa la sección inferior.'
+                        : 'No hay subtareas por hacer.'}
                     </div>
                   )}
                 </div>
@@ -380,7 +386,7 @@ const UrgentTaskCard = ({
                 <div className="pt-4 border-t border-gray-800">
                   <div className="flex items-center justify-between mb-3">
                     <h6 className="text-xs font-semibold uppercase tracking-wider text-amber-300">
-                      Subtareas pospuestas
+                      Tareas pospuestas
                     </h6>
                     <span className="text-xs text-gray-400">
                       {postponedMilestones.length} pospuesta(s)
@@ -390,37 +396,52 @@ const UrgentTaskCard = ({
                     {postponedMilestones.map((milestone, index) => (
                       <div
                         key={milestone.id || index}
-                        className="flex items-center gap-3 bg-[#111827] border border-gray-700 rounded-xl px-4 py-3 group/milestone"
+                        className="flex flex-col gap-2 bg-[#111827] border border-amber-900/40 rounded-xl px-4 py-3"
                       >
-                        <div className="w-5 h-5 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-300">
-                          <Clock size={12} />
+                        <div className="flex items-center gap-3">
+                          <div className="w-5 h-5 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-300 shrink-0">
+                            <Clock size={12} />
+                          </div>
+                          <div className="flex-1 text-sm text-gray-300 min-w-0">
+                            {milestone.text || '(Sin título)'}
+                            {milestone.targetDate && (
+                              <span className="ml-2 text-xs text-gray-500">
+                                · {formatCountdown(milestone.targetDate)}
+                              </span>
+                            )}
+                          </div>
+                          <div className="relative shrink-0">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setRescheduleTarget(milestone);
+                              }}
+                              aria-label={`Reprogramar subtarea pospuesta: ${milestone.text}`}
+                              className="text-gray-400 hover:text-blue-300 transition-colors p-1 peer"
+                            >
+                              <CalendarDays size={16} />
+                            </button>
+                            <div className="pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 z-20 opacity-0 translate-y-1 peer-hover:opacity-100 peer-hover:translate-y-0 transition-all duration-200">
+                              <div className="relative px-2.5 py-1.5 rounded-md text-[11px] whitespace-nowrap bg-[#001507] border border-emerald-800 text-emerald-100 shadow-lg shadow-emerald-950/40">
+                                Reprogramar
+                                <div className="absolute right-4 -bottom-1.5 w-2.5 h-2.5 rotate-45 bg-[#001507] border-r border-b border-emerald-800" />
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex-1 text-sm text-gray-300">
-                          {milestone.text || '(Sin título)'}
-                          {milestone.targetDate && (
-                            <span className="ml-2 text-xs text-gray-500">
-                              · {formatCountdown(milestone.targetDate)}
-                            </span>
-                          )}
-                        </div>
-                        <div className="relative group">
+                        <div className="flex pl-9">
                           <button
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
-                              setRescheduleTarget(milestone);
+                              setNotesTarget(milestone);
                             }}
-                            aria-label={`Reprogramar subtarea pospuesta: ${milestone.text}`}
-                            className="text-gray-400 hover:text-blue-300 transition-colors p-1"
+                            aria-label={`Notas de: ${milestone.text}`}
+                            className="text-xs font-medium text-amber-400/95 hover:text-amber-300 border border-amber-600/35 rounded-lg px-3 py-1.5 bg-amber-500/10"
                           >
-                            <CalendarDays size={16} />
+                            Notas
                           </button>
-                          <div className="pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 z-20 opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200">
-                            <div className="relative px-2.5 py-1.5 rounded-md text-[11px] whitespace-nowrap bg-[#001507] border border-emerald-800 text-emerald-100 shadow-lg shadow-emerald-950/40">
-                              Reprogramar
-                              <div className="absolute right-4 -bottom-1.5 w-2.5 h-2.5 rotate-45 bg-[#001507] border-r border-b border-emerald-800" />
-                            </div>
-                          </div>
                         </div>
                       </div>
                     ))}
@@ -482,7 +503,8 @@ const UrgentTaskCard = ({
             open={confirmDelete?.type === 'milestone'}
             onClose={() => setConfirmDelete(null)}
             onConfirm={() => {
-              handleDeleteMilestone(confirmDelete?.index ?? -1);
+              const mid = confirmDelete?.milestoneId;
+              if (mid) handleDeleteMilestone(mid);
               setConfirmDelete(null);
             }}
             title="Eliminar subtarea"
@@ -495,9 +517,9 @@ const UrgentTaskCard = ({
             open={!!confirmComplete}
             onClose={() => setConfirmComplete(null)}
             onConfirm={confirmCompleteAction}
-            title="Marcar subtarea como realizada"
-            message="¿Deseas marcar esta subtarea como realizada?"
-            confirmLabel="Completar"
+            title="Completar subtarea"
+            message={completeConfirmMessage}
+            confirmLabel="Sí, completar"
             variant="info"
           />
 
@@ -510,7 +532,7 @@ const UrgentTaskCard = ({
               onSave={async (activityId, subtaskId, data) => {
                 await rescheduleSubtask(activityId, subtaskId, {
                   ...data,
-                  status: 'pending',
+                  unsetPostponed: rescheduleTarget.status === 'postponed',
                 });
                 showSuccess('Subtarea reprogramada correctamente');
               }}
@@ -529,6 +551,17 @@ const UrgentTaskCard = ({
                 showSuccess('Subtarea pospuesta');
               }}
               onClose={() => setPostponeTarget(null)}
+            />
+          )}
+
+          {notesTarget && (
+            <SubtaskNotesModal
+              milestone={notesTarget}
+              onSave={async (note) => {
+                await patchSubtask(activity.id, notesTarget.id, { note });
+                showSuccess('Notas guardadas');
+              }}
+              onClose={() => setNotesTarget(null)}
             />
           )}
         </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { X, Clock, Loader2 } from 'lucide-react';
+import { getApiErrorMessage } from '../../utils/apiError';
 
 /**
  * Modal para posponer una subtarea con nota opcional.
@@ -48,7 +49,7 @@ const PostponeModal = ({ milestone, onSave, onClose }) => {
       await onSave(note.trim());
       onClose();
     } catch (e) {
-      setError(e?.response?.data?.detail || e?.message || 'Error al guardar.');
+      setError(getApiErrorMessage(e, 'Error al guardar.'));
     } finally {
       setSaving(false);
     }

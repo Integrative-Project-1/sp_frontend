@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { X, CalendarDays, Clock, AlertTriangle, CheckCircle2, Loader2 } from 'lucide-react';
 import { detectConflict } from '../../utils/conflictDetection';
+import { getApiErrorMessage } from '../../utils/apiError';
 
 const inputStyle = {
   backgroundColor: 'rgba(15,23,42,0.8)',
@@ -149,7 +150,7 @@ const RescheduleModal = ({ milestone, activityId, activities, dailyLimit, onSave
       });
       onClose();
     } catch (e) {
-      setSaveError(e?.response?.data?.detail || e?.message || 'Error al guardar.');
+      setSaveError(getApiErrorMessage(e, 'Error al guardar.'));
     } finally {
       setSaving(false);
     }
