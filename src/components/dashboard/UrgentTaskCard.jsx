@@ -129,15 +129,15 @@ const UrgentTaskCard = ({
   };
 
   const confirmCompleteAction = async () => {
-    if (!confirmComplete) return;
-    const { milestone } = confirmComplete;
+    // Capture milestone synchronously before any state changes close the modal
+    const milestone = confirmComplete?.milestone;
+    setConfirmComplete(null);
+    if (!milestone) return;
     try {
       await updateSubtaskStatus(activity.id, milestone.id, { status: 'done' });
       showSuccess('Subtarea marcada como realizada');
     } catch (e) {
       showError(getApiErrorMessage(e, 'Error al marcar la subtarea. Intenta de nuevo.'));
-    } finally {
-      setConfirmComplete(null);
     }
   };
 

@@ -47,8 +47,8 @@ export const useActivities = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchActivities = useCallback(async () => {
-    setLoading(true);
+  const fetchActivities = useCallback(async ({ silent = false } = {}) => {
+    if (!silent) setLoading(true);
     try {
       const data = await svc.getActivities();
       const list = Array.isArray(data) ? data : data.results || [];
@@ -56,9 +56,9 @@ export const useActivities = () => {
       setActivities(details.map(apiToUI));
       setError(null);
     } catch (e) {
-      setError(getApiErrorMessage(e, 'Error al cargar actividades'));
+      if (!silent) setError(getApiErrorMessage(e, 'Error al cargar actividades'));
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, []);
 
@@ -144,15 +144,44 @@ export const useActivities = () => {
   /** PATCH parcial; solo incluye los campos que envíes (la nota se conserva si no mandas note). */
   const patchSubtask = async (activityId, subtaskId, body) => {
     await svc.updateSubtask(activityId, subtaskId, body);
-    await fetchActivities();
+    await fetchActivities({ silent: true });
   };
 
   const updateSubtaskStatus = async (activityId, subtaskId, { status, note }) => {
     const body = {};
     if (status !== undefined) body.status = status;
     if (note !== undefined) body.note = note;
-    await svc.updateSubtask(activityId, subtaskId, body);
-    await fetchActivities();
+
+    // Optimistic update — el cambio se ve de inmediato sin spinner
+    const snapshot = activities;
+    setActivities((prev) =>
+      prev.map((a) => {
+        if (a.id !== String(activityId)) return a;
+        return {
+          ...a,
+          milestones: a.milestones.map((m) => {
+            if (m.id !== String(subtaskId)) return m;
+            const newStatus = status !== undefined ? status : m.status;
+            return {
+              ...m,
+              status: newStatus,
+              completed: newStatus === 'done',
+              ...(note !== undefined && { note }),
+            };
+          }),
+        };
+      })
+    );
+
+    try {
+      await svc.updateSubtask(activityId, subtaskId, body);
+      // Sincroniza con el servidor en segundo plano sin mostrar spinner
+      fetchActivities({ silent: true });
+    } catch (e) {
+      // Revierte el estado optimista si la API falla
+      setActivities(snapshot);
+      throw e;
+    }
   };
 
   /** unsetPostponed: al reprogramar, quitar de «pospuestas» (status → pending); la nota se mantiene. */
@@ -167,7 +196,7 @@ export const useActivities = () => {
     };
     if (unsetPostponed) body.status = 'pending';
     await svc.updateSubtask(activityId, subtaskId, body);
-    await fetchActivities();
+    await fetchActivities({ silent: true });
   };
 
   const deleteActivity = async (activityId) => {

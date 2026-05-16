@@ -68,7 +68,8 @@ const ConfirmModal = ({
             </button>
             <button
               type="button"
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 onConfirm();
                 onClose();
               }}
