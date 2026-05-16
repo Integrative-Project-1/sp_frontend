@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import * as svc from '../services/activitiesService';
+import { getApiErrorMessage } from '../utils/apiError';
 
 const TYPE_UI_TO_API = {
   examen: 'exam',
@@ -57,7 +58,7 @@ export const useActivities = () => {
       setActivities(details.map(apiToUI));
       setError(null);
     } catch (e) {
-      setError(e?.response?.data?.detail || e?.message || 'Error al cargar actividades');
+      setError(getApiErrorMessage(e, 'Error al cargar actividades'));
     } finally {
       setLoading(false);
     }
@@ -94,16 +95,32 @@ export const useActivities = () => {
     }
   };
 
-  const updateSubtaskStatus = async (activityId, subtaskId, { status, note = '' }) => {
-    await svc.updateSubtask(activityId, subtaskId, { status, note });
+  /** PATCH parcial; solo incluye los campos que envíes (la nota se conserva si no mandas note). */
+  const patchSubtask = async (activityId, subtaskId, body) => {
+    await svc.updateSubtask(activityId, subtaskId, body);
     await fetchActivities();
   };
 
-  const rescheduleSubtask = async (activityId, subtaskId, { targetDate, estimatedHours }) => {
-    await svc.updateSubtask(activityId, subtaskId, {
+  const updateSubtaskStatus = async (activityId, subtaskId, { status, note }) => {
+    const body = {};
+    if (status !== undefined) body.status = status;
+    if (note !== undefined) body.note = note;
+    await svc.updateSubtask(activityId, subtaskId, body);
+    await fetchActivities();
+  };
+
+  /** unsetPostponed: al reprogramar, quitar de «pospuestas» (status → pending); la nota se mantiene. */
+  const rescheduleSubtask = async (
+    activityId,
+    subtaskId,
+    { targetDate, estimatedHours, unsetPostponed = false }
+  ) => {
+    const body = {
       target_date: targetDate,
       estimated_hours: estimatedHours,
-    });
+    };
+    if (unsetPostponed) body.status = 'pending';
+    await svc.updateSubtask(activityId, subtaskId, body);
     await fetchActivities();
   };
 
@@ -112,5 +129,16 @@ export const useActivities = () => {
     setActivities((prev) => prev.filter((a) => a.id !== String(activityId)));
   };
 
-  return { activities, loading, addActivity, updateActivity, deleteActivity, rescheduleSubtask, updateSubtaskStatus, error, retry };
+  return {
+    activities,
+    loading,
+    addActivity,
+    updateActivity,
+    deleteActivity,
+    rescheduleSubtask,
+    updateSubtaskStatus,
+    patchSubtask,
+    error,
+    retry,
+  };
 };

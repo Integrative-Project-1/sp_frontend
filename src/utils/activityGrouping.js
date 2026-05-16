@@ -66,18 +66,24 @@ export const groupAndSortActivities = (activities) => {
       return;
     }
 
+    const actDate = normalizeDate(activity.eventDate) || today;
     const hasVencidas = pending.some((p) => p.targetDate && p.targetDate < today);
     const hasParaHoy = pending.some((p) => p.targetDate && p.targetDate === today);
     const hasProximas = pending.some((p) => p.targetDate && p.targetDate > today);
 
-    if (hasVencidas) vencidas.push({ activity, pending });
-    else if (hasParaHoy) paraHoy.push({ activity, pending });
-    else if (hasProximas) proximas.push({ activity, pending });
-    else {
-      const actDate = normalizeDate(activity.eventDate) || today;
-      if (actDate < today) vencidas.push({ activity, pending });
-      else if (actDate === today) paraHoy.push({ activity, pending });
-      else proximas.push({ activity, pending });
+    // Clasificación considerando tanto la fecha de la actividad como las subtareas
+    if (actDate === today) {
+      // Si la actividad vence hoy, va a "Para hoy" independientemente de subtareas vencidas
+      paraHoy.push({ activity, pending });
+    } else if (actDate < today) {
+      // Si la actividad ya venció, va a "Vencidas"
+      vencidas.push({ activity, pending });
+    } else {
+      // Si la actividad es futura, considerar las subtareas para ubicarla
+      if (hasVencidas) vencidas.push({ activity, pending });
+      else if (hasParaHoy) paraHoy.push({ activity, pending });
+      else if (hasProximas) proximas.push({ activity, pending });
+      else proximas.push({ activity, pending }); // Por defecto va a próximas
     }
   });
 

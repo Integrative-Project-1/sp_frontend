@@ -182,7 +182,7 @@ const HomePage = () => {
       onEditActivity={(a) => navigate(`/editar/${a.id}`)}
       onDeleteActivity={handleDeleteActivity}
       variant={variant}
-      Icon={Icon}
+      LeadingIcon={Icon}
       showEmergency={latestHasCapacityConflict && String(activity.id) === String(latestActivityId)}
     />
   );
