@@ -59,6 +59,7 @@ const ActivityForm = ({ onSubmit, onCancel, initialData }) => {
       return [
         {
           id: crypto.randomUUID(),
+          subtaskId: null,
           text: '',
           completed: false,
           targetDate: defaultEventDate,
@@ -67,6 +68,7 @@ const ActivityForm = ({ onSubmit, onCancel, initialData }) => {
       ];
     return ms.map((m) => ({
       id: crypto.randomUUID(),
+      subtaskId: m.id || null,
       text: m.text || '',
       completed: Boolean(m.completed),
       targetDate: m.targetDate || defaultEventDate,
@@ -78,7 +80,14 @@ const ActivityForm = ({ onSubmit, onCancel, initialData }) => {
     const date = watchedEventDate || defaultEventDate;
     setMilestones((prev) => [
       ...prev,
-      { id: crypto.randomUUID(), text: '', completed: false, targetDate: date, estimatedEffort: 3 },
+      {
+        id: crypto.randomUUID(),
+        subtaskId: null,
+        text: '',
+        completed: false,
+        targetDate: date,
+        estimatedEffort: 3,
+      },
     ]);
   };
 
@@ -89,6 +98,7 @@ const ActivityForm = ({ onSubmit, onCancel, initialData }) => {
         ? [
             {
               id: crypto.randomUUID(),
+              subtaskId: null,
               text: '',
               completed: false,
               targetDate: defaultEventDate,
@@ -106,9 +116,10 @@ const ActivityForm = ({ onSubmit, onCancel, initialData }) => {
   const handleFormSubmit = async (data) => {
     const tasks = milestones
       .filter((m) => m.text.trim())
-      .map(({ text, completed, targetDate, estimatedEffort }) => ({
+      .map(({ subtaskId, text, completed, targetDate, estimatedEffort }) => ({
+        subtaskId,
         text: text.trim(),
-        completed,
+        status: completed ? 'done' : 'pending',
         targetDate: targetDate || data.eventDate,
         estimatedEffort: Number(estimatedEffort) || 3,
       }));
